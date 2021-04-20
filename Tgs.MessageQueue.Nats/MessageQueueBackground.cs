@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Tgs.MessageQueue.Nats.Configuration;
+
+namespace Tgs.MessageQueue.Nats
+{
+	internal class MessageQueueBackground : BackgroundService
+	{
+		private readonly IMessageReceiver<NatsSubscriptionSettings> _messageReceiver;
+		private readonly IMessageReceiver<NatsQueueScriptionSettings> _queueReceiver;
+		private readonly IServiceProvider _serviceProvider;
+		private readonly IEnumerable<ISubscribeRegistration> _subscribes;
+		private readonly ILogger<MessageQueueBackground> _logger;
+
+		public MessageQueueBackground(
+			IMessageReceiver<NatsSubscriptionSettings> messageReceiver,
+			IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
+			IServiceProvider serviceProvider,
+			IEnumerable<ISubscribeRegistration> subscribes,
+			ILogger<MessageQueueBackground> logger
+			)
+		{
+			_messageReceiver = messageReceiver ?? throw new ArgumentNullException(nameof(messageReceiver));
+			_queueReceiver = queueReceiver ?? throw new ArgumentNullException(nameof(queueReceiver));
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_subscribes = subscribes ?? throw new ArgumentNullException(nameof(subscribes));
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		}
+
+		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+		{
+			var subscriptions = new List<IDisposable>();
+
+			foreach (var registration in _subscribes)
+				subscriptions.Add(
+					await registration.SubscribeAsync(
+						_messageReceiver,
+						_queueReceiver,
+						_serviceProvider,
+						_logger,
+						stoppingToken).ConfigureAwait(false));
+
+			stoppingToken.Register(() =>
+			{
+				foreach (var sub in subscriptions)
+					sub.Dispose();
+			});
+		}
+	}
+}
