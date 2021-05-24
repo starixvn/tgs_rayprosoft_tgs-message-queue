@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,8 +6,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.Nats.Configuration
 {
-	record QueueReplyRegistration<THandler>(string Subject, string Queue) : ISubscribeRegistration where THandler : IMessageHandler
+	internal class QueueReplyRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 	{
+		public string Queue { get; }
+
+		public string Subject { get; }
+
+		public QueueReplyRegistration(string subject, string queue)
+		{
+			if (string.IsNullOrEmpty(subject))
+				throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
+			if (string.IsNullOrEmpty(queue))
+				throw new ArgumentException($"'{nameof(queue)}' is not Null or Empty.", nameof(queue));
+			Subject = subject;
+			Queue = queue;
+		}
+
 		public ValueTask<IDisposable> SubscribeAsync(
 			IMessageReceiver<NatsSubscriptionSettings> messageReceiver,
 			IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
@@ -21,25 +32,38 @@ namespace Tgs.MessageQueue.Nats.Configuration
 			{
 				Subject = Subject,
 				Queue = Queue,
-				EventHandler = async (sender, args) =>
+				EventHandler = (sender, args) =>
 				{
-					try
+					_ = HandleMessageAsync(new MessageDataInfo
 					{
-						using var scope = serviceProvider.CreateScope();
-						var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
-						var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
-
-						await handler.HandleAsync(args.Message.Data, cancellationToken).ConfigureAwait(false);
-
-						await replySender
-							.PublishAsync(args.Message.Reply, Array.Empty<byte>())
-							.ConfigureAwait(false);
-					}
-					catch (Exception ex)
-					{
-						logger.LogError(ex, $"Handle {Subject} occur error.");
-					}
+						Args = args,
+						ServiceProvider = serviceProvider,
+						Logger = logger,
+						CancellationToken = cancellationToken
+					});
 				}
 			});
+
+		private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
+		{
+			try
+			{
+				using var scope = dataInfo.ServiceProvider.CreateScope();
+				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
+				var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
+
+				await handler
+					.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
+					.ConfigureAwait(false);
+
+				await replySender
+					.PublishAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>())
+					.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			}
+		}
 	}
 }

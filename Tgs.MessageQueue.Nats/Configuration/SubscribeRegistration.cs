@@ -6,8 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.Nats.Configuration
 {
-	record SubscribeRegistration<THandler>(string Subject) : ISubscribeRegistration where THandler : IMessageHandler
+	internal class SubscribeRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 	{
+		public string Subject { get; }
+
+		public SubscribeRegistration(string subject)
+		{
+			if (string.IsNullOrEmpty(subject))
+				throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
+			Subject = subject;
+		}
+
 		public ValueTask<IDisposable> SubscribeAsync(
 			IMessageReceiver<NatsSubscriptionSettings> messageReceiver,
 			IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
@@ -17,22 +26,33 @@ namespace Tgs.MessageQueue.Nats.Configuration
 			=> messageReceiver.SubscribeAsync(new NatsSubscriptionSettings
 			{
 				Subject = Subject,
-				EventHandler = async (sender, args) =>
+				EventHandler = (sender, args) =>
 				{
-					try
+					_ = HandleMessageAsync(new MessageDataInfo
 					{
-						using var scope = serviceProvider.CreateScope();
-						var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
-
-						await handler
-							.HandleAsync(args.Message.Data, cancellationToken)
-							.ConfigureAwait(false);
-					}
-					catch (Exception ex)
-					{
-						logger.LogError(ex, $"Handle {Subject} occur error.");
-					}
+						Args = args,
+						ServiceProvider = serviceProvider,
+						Logger = logger,
+						CancellationToken = cancellationToken
+					});
 				}
 			});
+
+		private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
+		{
+			try
+			{
+				using var scope = dataInfo.ServiceProvider.CreateScope();
+				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
+
+				await handler
+					.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
+					.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			}
+		}
 	}
 }
