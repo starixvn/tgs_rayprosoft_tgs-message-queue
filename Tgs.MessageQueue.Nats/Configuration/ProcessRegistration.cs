@@ -77,7 +77,7 @@ namespace Tgs.MessageQueue.Nats.Configuration
 
 				if (handler is IMessageExceptionProcessor exceptionProcessor)
 					await exceptionProcessor
-						.HandleExceptionAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
+						.HandleExceptionAsync(dataInfo.Args.Message.Data, ex, dataInfo.CancellationToken)
 						.ConfigureAwait(false);
 			}
 		}
