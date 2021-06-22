@@ -12,7 +12,7 @@ namespace Tgs.MessageQueue.Nats.Configuration
 
 		public NatsMessageQueueConfiguration(IServiceCollection services)
 		{
-			Services = services;
+			Services = services ?? throw new ArgumentNullException(nameof(services));
 
 			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 		}
