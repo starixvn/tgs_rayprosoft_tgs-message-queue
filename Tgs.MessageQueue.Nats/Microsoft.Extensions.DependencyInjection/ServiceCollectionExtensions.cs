@@ -4,6 +4,8 @@ using NATS.Client;
 using Tgs.MessageQueue;
 using Tgs.MessageQueue.Nats;
 using Tgs.MessageQueue.Nats.Configuration;
+using System.Linq;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -38,6 +40,25 @@ namespace Microsoft.Extensions.DependencyInjection
 				.AddHostedService<MessageQueueBackground>()
 				.AddOptions<NatsOptions>()
 				.Services;
+		}
+
+		public static IServiceCollection AddFakeNatsMessageQueue(this IServiceCollection services)
+		{
+
+			foreach (var desc in services.Where(
+				desc => desc.ServiceType == typeof(IHostedService)
+					&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
+			{
+				services.Remove(desc);
+			}
+
+			return services
+				.AddSingleton<NoopMessageQueueService>()
+				.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>())
+				.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
+					sp => sp.GetRequiredService<NoopMessageQueueService>())
+				.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
+					sp => sp.GetRequiredService<NoopMessageQueueService>());
 		}
 	}
 }
