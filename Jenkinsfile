@@ -11,6 +11,12 @@ pipeline {
 				sh "dotnet build -c $BuildConfiguration"
 			}
 		}
+
+		stage('Test') {
+			steps {
+				sh 'dotnet test -c $BuildConfiguration -l trx --no-build'
+			}
+		}
 		
 		stage('Pack & Push Tgs.MessageQueue') {
 			steps {
@@ -26,4 +32,10 @@ pipeline {
 			}
 		}
 	}
+
+	post {
+        always {
+            step([$class: 'MSTestPublisher', testResultsFile:"**/*.trx", failOnError: false, keepLongStdio: true])
+        }
+    }
 }
