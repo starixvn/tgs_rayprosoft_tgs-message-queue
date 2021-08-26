@@ -3,10 +3,10 @@ using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats
 {
-	internal struct NatsSubscriptionSettings
+	internal record NatsSubscriptionSettings
 	{
-		public string Subject { get; set; }
+		public string Subject { get; set; } = default!;
 
-		public EventHandler<MsgHandlerEventArgs> EventHandler { get; set; }
+		public EventHandler<MsgHandlerEventArgs> EventHandler { get; set; } = default!;
 	}
 }
