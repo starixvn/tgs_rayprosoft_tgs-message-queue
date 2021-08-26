@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue", "Tgs.MessageQueue\Tgs.MessageQueue.csproj", "{54DC81BF-B1F1-49A9-84BD-230C68FCBB10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue", "Tgs.MessageQueue\Tgs.MessageQueue.csproj", "{54DC81BF-B1F1-49A9-84BD-230C68FCBB10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.Nats", "Tgs.MessageQueue.Nats\Tgs.MessageQueue.Nats.csproj", "{C7914085-DEE6-4718-879A-E3C1F99B0063}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.Nats", "Tgs.MessageQueue.Nats\Tgs.MessageQueue.Nats.csproj", "{C7914085-DEE6-4718-879A-E3C1F99B0063}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9ADEEFDF-7223-4B59-A38C-EDF0DCA35679}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.Nats.UnitTests", "Tgs.MessageQueue.Nats.UnitTests\Tgs.MessageQueue.Nats.UnitTests.csproj", "{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +28,10 @@ Global
 		{C7914085-DEE6-4718-879A-E3C1F99B0063}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7914085-DEE6-4718-879A-E3C1F99B0063}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7914085-DEE6-4718-879A-E3C1F99B0063}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

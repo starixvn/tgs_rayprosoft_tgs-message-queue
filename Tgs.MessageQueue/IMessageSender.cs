@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tgs.MessageQueue
 {
@@ -6,8 +7,14 @@ namespace Tgs.MessageQueue
 	{
 		ValueTask PublishAsync(string subject, byte[] data);
 
-		ValueTask SendAsync(string subject, byte[] data);
+		ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
 
 		ValueTask<byte[]> RequestAsync(string subject, byte[] data);
+
+		ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+
+		ValueTask SendAsync(string subject, byte[] data);
+
+		ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
 	}
 }

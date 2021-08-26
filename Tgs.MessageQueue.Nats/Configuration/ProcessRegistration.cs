@@ -79,6 +79,10 @@ namespace Tgs.MessageQueue.Nats.Configuration
 					await exceptionProcessor
 						.HandleExceptionAsync(dataInfo.Args.Message.Data, ex, dataInfo.CancellationToken)
 						.ConfigureAwait(false);
+				else
+					await replySender
+						.PublishFailAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>())
+						.ConfigureAwait(false);
 			}
 		}
 	}

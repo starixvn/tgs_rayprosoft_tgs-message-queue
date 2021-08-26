@@ -52,6 +52,21 @@ namespace Tgs.MessageQueue.Nats.Configuration
 				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
 				var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
 
+				await ProcessMessageAsync(dataInfo, handler, replySender).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			}
+		}
+
+		private async Task ProcessMessageAsync(
+			MessageDataInfo dataInfo,
+			THandler handler,
+			IMessageSender replySender)
+		{
+			try
+			{
 				await handler
 					.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
 					.ConfigureAwait(false);
@@ -63,6 +78,10 @@ namespace Tgs.MessageQueue.Nats.Configuration
 			catch (Exception ex)
 			{
 				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+
+				await replySender
+					.PublishFailAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>())
+					.ConfigureAwait(false);
 			}
 		}
 	}
