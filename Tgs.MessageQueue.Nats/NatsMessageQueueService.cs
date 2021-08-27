@@ -15,9 +15,6 @@ namespace Tgs.MessageQueue.Nats
 			_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 		}
 
-		public ValueTask PublishAsync(string subject, byte[] data)
-			=> PublishAsync(subject, data, Array.Empty<MessageHeaderValue>());
-
 		public ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
 		{
 			var msg = new Msg(subject, data);
@@ -28,9 +25,6 @@ namespace Tgs.MessageQueue.Nats
 
 			return ValueTask.CompletedTask;
 		}
-
-		public ValueTask<byte[]> RequestAsync(string subject, byte[] data)
-			=> RequestAsync(subject, data, Array.Empty<MessageHeaderValue>());
 
 		public async ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
 		{
@@ -46,9 +40,6 @@ namespace Tgs.MessageQueue.Nats
 
 			return reply.Data;
 		}
-
-		public ValueTask SendAsync(string subject, byte[] data)
-			=> SendAsync(subject, data, Array.Empty<MessageHeaderValue>());
 
 		public async ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
 		{
