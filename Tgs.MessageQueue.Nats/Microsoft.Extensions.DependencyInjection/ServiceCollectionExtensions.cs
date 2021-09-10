@@ -1,25 +1,64 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NATS.Client;
 using Tgs.MessageQueue;
+using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.Nats;
 using Tgs.MessageQueue.Nats.Configuration;
-using System.Linq;
-using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class ServiceCollectionExtensions
 	{
+		public static IServiceCollection AddFakeNatsMessageQueue(this IServiceCollection services)
+		{
+			foreach (var desc in services.Where(
+				desc => desc.ServiceType == typeof(IHostedService)
+					&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
+			{
+				services.Remove(desc);
+			}
+
+			return services
+				.AddSingleton<NoopMessageQueueService>()
+				.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>())
+				.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
+					sp => sp.GetRequiredService<NoopMessageQueueService>())
+				.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
+					sp => sp.GetRequiredService<NoopMessageQueueService>());
+		}
+
 		public static IServiceCollection AddNatsMessageQueue(
-			this IServiceCollection services,
+					this IServiceCollection services,
 			Action<NatsMessageQueueConfiguration> configure)
 		{
 			var configuration = new NatsMessageQueueConfiguration(services);
 
 			configure(configuration);
 
-			return services
+			InitialNatsMessageQueueConfiguration(configuration);
+
+			return services;
+		}
+
+		public static MessageQueueConfiguration AddNatsMessageQueue(
+			this MessageQueueConfiguration configuration,
+			Action<NatsMessageQueueConfiguration> configure)
+		{
+			var natsConfiguration = new NatsMessageQueueConfiguration(configuration);
+
+			configure(natsConfiguration);
+
+			InitialNatsMessageQueueConfiguration(natsConfiguration);
+
+			return configuration;
+		}
+
+		private static void InitialNatsMessageQueueConfiguration(NatsMessageQueueConfiguration configuration)
+		{
+			configuration.Services
 				.AddSingleton<ConnectionFactory>()
 				.AddSingleton(sp =>
 				{
@@ -37,27 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
 				.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
 					sp => sp.GetRequiredService<NatsMessageQueueService>())
 				.AddHostedService<MessageQueueBackground>()
-				.AddOptions<NatsOptions>()
-				.Services;
-		}
-
-		public static IServiceCollection AddFakeNatsMessageQueue(this IServiceCollection services)
-		{
-
-			foreach (var desc in services.Where(
-				desc => desc.ServiceType == typeof(IHostedService)
-					&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
-			{
-				services.Remove(desc);
-			}
-
-			return services
-				.AddSingleton<NoopMessageQueueService>()
-				.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>())
-				.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
-					sp => sp.GetRequiredService<NoopMessageQueueService>())
-				.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
-					sp => sp.GetRequiredService<NoopMessageQueueService>());
+				.AddOptions<NatsOptions>();
 		}
 	}
 }

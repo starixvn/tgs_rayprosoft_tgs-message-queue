@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
-using Tgs.MessageQueue.Exchanges;
 using Tgs.MessageQueue.RabbitMQ.Exchanges;
 
 namespace Tgs.MessageQueue.RabbitMQ.Configuration
@@ -10,10 +9,6 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 	public class RabbitMessageQueueConfiguration
 	{
 		private readonly MessageQueueConfiguration _coreConfiguration;
-
-		private readonly AlwayMatchMessageExchange<RabbitMessageQueueService> _processAllExchange;
-
-		private bool _isCustomExchange;
 
 		private List<ISubscribeRegistration> _subscribeRegistrations = new List<ISubscribeRegistration>();
 
@@ -23,11 +18,16 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 
-			_coreConfiguration = services.AddMessageQueueCore();
-			_processAllExchange = new AlwayMatchMessageExchange<RabbitMessageQueueService>();
+			_coreConfiguration = services.AddMessageQueue();
 
-			_coreConfiguration.AddExchange(_processAllExchange);
-			_isCustomExchange = false;
+			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+		}
+
+		public RabbitMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
+		{
+			_coreConfiguration = coreConfiguration ?? throw new ArgumentNullException(nameof(coreConfiguration));
+
+			Services = coreConfiguration.Services;
 
 			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 		}
@@ -48,26 +48,9 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			return this;
 		}
 
-		public RabbitMessageQueueConfiguration ProcessAllSubjects()
+		public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchangeName)
 		{
-			if (!_isCustomExchange)
-				return this;
-
-			_coreConfiguration.AddExchange(_processAllExchange);
-
-			return this;
-		}
-
-		public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchaneName)
-		{
-			if (!_isCustomExchange)
-			{
-				_coreConfiguration.RemoveExchange(_processAllExchange);
-
-				_isCustomExchange = true;
-			}
-
-			_coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchaneName));
+			_coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchangeName));
 
 			return this;
 		}

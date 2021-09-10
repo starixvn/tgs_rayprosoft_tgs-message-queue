@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Tgs.MessageQueue.Exchanges
 {
-	public class AlwayMatchMessageExchange<TMessageSender> : IMessageExchange
+	public class AlwaysMatchMessageExchange<TMessageSender> : IMessageExchange
 		where TMessageSender : class, IMessageSender
 	{
 		public IMessageSender GetMessageSender(IServiceProvider serviceProvider)

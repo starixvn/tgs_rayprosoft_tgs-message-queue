@@ -9,7 +9,7 @@ namespace Tgs.MessageQueue.Nats.Configuration
 	public class NatsMessageQueueConfiguration
 	{
 		private readonly MessageQueueConfiguration _coreConfiguration;
-		private readonly AlwayMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
+		private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
 		private bool _isCustomExchange;
 		private List<ISubscribeRegistration> _subscribeRegistrations = new List<ISubscribeRegistration>();
 
@@ -19,8 +19,21 @@ namespace Tgs.MessageQueue.Nats.Configuration
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 
-			_coreConfiguration = services.AddMessageQueueCore();
-			_processAllExchange = new AlwayMatchMessageExchange<NatsMessageQueueService>();
+			_coreConfiguration = services.AddMessageQueue();
+			_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
+
+			_coreConfiguration.AddExchange(_processAllExchange);
+			_isCustomExchange = false;
+
+			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+		}
+
+		public NatsMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
+		{
+			Services = coreConfiguration.Services;
+
+			_coreConfiguration = coreConfiguration;
+			_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
 
 			_coreConfiguration.AddExchange(_processAllExchange);
 			_isCustomExchange = false;

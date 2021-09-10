@@ -1,5 +1,6 @@
 ﻿using System;
 using Tgs.MessageQueue;
+using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.RabbitMQ;
 using Tgs.MessageQueue.RabbitMQ.Configuration;
 
@@ -15,12 +16,31 @@ namespace Microsoft.Extensions.DependencyInjection
 
 			configure(configuration);
 
-			return services
+			InitialRabbitMessageQueueConfiguration(configuration);
+
+			return services;
+		}
+
+		public static MessageQueueConfiguration AddRabbitMessageQueue(
+			this MessageQueueConfiguration configuration,
+			Action<RabbitMessageQueueConfiguration> configure)
+		{
+			var rabbitConfiguration = new RabbitMessageQueueConfiguration(configuration);
+
+			configure(rabbitConfiguration);
+
+			InitialRabbitMessageQueueConfiguration(rabbitConfiguration);
+
+			return configuration;
+		}
+
+		private static void InitialRabbitMessageQueueConfiguration(RabbitMessageQueueConfiguration configuration)
+		{
+			configuration.Services
 				.AddSingleton<RabbitMQConnectionManager>()
 				.AddSingleton<IMessageReceiver<RabbitSubscriptionSettings>, RabbitMQConnectionManager>()
 				.AddHostedService<MessageQueueBackground>()
-				.AddOptions<RabbitMQOptions>()
-				.Services;
+				.AddOptions<RabbitMQOptions>();
 		}
 	}
 }
