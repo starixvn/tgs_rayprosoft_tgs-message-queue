@@ -32,7 +32,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
 					return ActivatorUtilities.CreateInstance<NatsMessageQueueService>(sp, connectionFactory.CreateConnection(options));
 				})
-				.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NatsMessageQueueService>())
 				.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
 					sp => sp.GetRequiredService<NatsMessageQueueService>())
 				.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(

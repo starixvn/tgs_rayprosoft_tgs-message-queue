@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.Nats.UnitTests", "Tgs.MessageQueue.Nats.UnitTests\Tgs.MessageQueue.Nats.UnitTests.csproj", "{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.Nats.UnitTests", "Tgs.MessageQueue.Nats.UnitTests\Tgs.MessageQueue.Nats.UnitTests.csproj", "{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.RabbitMQ", "Tgs.MessageQueue.RabbitMQ\Tgs.MessageQueue.RabbitMQ.csproj", "{0994DABC-137D-437B-A6A7-EB06B5A57EAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0994DABC-137D-437B-A6A7-EB06B5A57EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0994DABC-137D-437B-A6A7-EB06B5A57EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0994DABC-137D-437B-A6A7-EB06B5A57EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0994DABC-137D-437B-A6A7-EB06B5A57EAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
