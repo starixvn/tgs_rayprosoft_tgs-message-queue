@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Tgs.MessageQueue
@@ -12,6 +13,7 @@ namespace Tgs.MessageQueue
 		public MultiplexerMessageSender(IServiceProvider serviceProvider, IEnumerable<IMessageExchange> exchanges)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_exchanges = (exchanges ?? throw new ArgumentNullException(nameof(exchanges))).ToArray();
 		}
 
 		public IMessageSender GetMessageSender(IServiceProvider serviceProvider) => this;
