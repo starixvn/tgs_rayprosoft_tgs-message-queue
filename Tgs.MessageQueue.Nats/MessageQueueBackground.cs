@@ -21,8 +21,7 @@ namespace Tgs.MessageQueue.Nats
 			IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
 			IServiceProvider serviceProvider,
 			IEnumerable<ISubscribeRegistration> subscribes,
-			ILogger<MessageQueueBackground> logger
-			)
+			ILogger<MessageQueueBackground> logger)
 		{
 			_messageReceiver = messageReceiver ?? throw new ArgumentNullException(nameof(messageReceiver));
 			_queueReceiver = queueReceiver ?? throw new ArgumentNullException(nameof(queueReceiver));
