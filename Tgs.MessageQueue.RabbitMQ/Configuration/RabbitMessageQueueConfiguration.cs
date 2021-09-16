@@ -32,9 +32,10 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 		}
 
-		public RabbitMessageQueueConfiguration AddHandler<THandler>(string subject, bool autoAck = true) where THandler : IMessageHandler
+		public RabbitMessageQueueConfiguration AddHandler<THandler>(string queueName, bool autoAck = true) 
+			where THandler : IMessageHandler
 		{
-			_subscribeRegistrations.Add(new SubscribeRegistration<THandler>(subject, autoAck));
+			_subscribeRegistrations.Add(new SubscribeRegistration<THandler>(queueName, autoAck));
 
 			return this;
 		}
