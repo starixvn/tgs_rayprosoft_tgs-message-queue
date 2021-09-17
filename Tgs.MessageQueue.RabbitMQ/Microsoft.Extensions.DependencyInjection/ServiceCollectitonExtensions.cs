@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Extensions.Hosting;
 using Tgs.MessageQueue;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.RabbitMQ;
@@ -32,6 +34,21 @@ namespace Microsoft.Extensions.DependencyInjection
 			InitialRabbitMessageQueueConfiguration(rabbitConfiguration);
 
 			return configuration;
+		}
+
+		public static IServiceCollection AddFakeRabbitMessageQueue(
+			this IServiceCollection services)
+		{
+			foreach (var desc in services.Where(
+				desc => desc.ServiceType == typeof(IHostedService)
+					&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
+			{
+				services.Remove(desc);
+			}
+
+			return services
+				.AddSingleton<NoopMessageQueueService>()
+				.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>());
 		}
 
 		private static void InitialRabbitMessageQueueConfiguration(RabbitMessageQueueConfiguration configuration)
