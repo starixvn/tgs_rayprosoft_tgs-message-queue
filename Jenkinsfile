@@ -35,7 +35,7 @@ pipeline {
 		stage('Pack & Push Tgs.MessageQueue.RabbitMQ') {
 			steps {
 				sh 'dotnet pack Tgs.MessageQueue.RabbitMQ/Tgs.MessageQueue.RabbitMQ.csproj -c $BuildConfiguration --no-build --no-restore'
-				sh 'dotnet nuget push Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg --source "raypro" --skip-duplicate'
+				sh 'dotnet nuget push Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg --source "raypro-baget" -k admin --skip-duplicate'
 			}
 		}
 	}
