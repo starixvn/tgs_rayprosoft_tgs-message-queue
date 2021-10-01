@@ -29,6 +29,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			=> messageReceiver.SubscribeAsync(new RabbitSubscriptionSettings
 			{
 				Subject = Subject,
+				AutoAck = _autoAck,
 				EventHandler = (sender, args) =>
 				{
 					return HandleMessageAsync(new MessageDataInfo
