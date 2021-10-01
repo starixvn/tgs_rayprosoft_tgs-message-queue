@@ -21,21 +21,21 @@ pipeline {
 		stage('Pack & Push Tgs.MessageQueue') {
 			steps {
 				sh 'dotnet pack Tgs.MessageQueue/Tgs.MessageQueue.csproj -c $BuildConfiguration --no-build --no-restore'
-				sh 'dotnet nuget push Tgs.MessageQueue/bin/$BuildConfiguration/*.nupkg --source "raypro" --skip-duplicate'
+				sh 'dotnet nuget push Tgs.MessageQueue/bin/$BuildConfiguration/*.nupkg -s "raypro-baget" -k admin --skip-duplicate'
 			}
 		}
 
         stage('Pack & Push Tgs.MessageQueue.Nats') {
 			steps {
 				sh 'dotnet pack Tgs.MessageQueue.Nats/Tgs.MessageQueue.Nats.csproj -c $BuildConfiguration --no-build --no-restore'
-				sh 'dotnet nuget push Tgs.MessageQueue.Nats/bin/$BuildConfiguration/*.nupkg --source "raypro" --skip-duplicate'
+				sh 'dotnet nuget push Tgs.MessageQueue.Nats/bin/$BuildConfiguration/*.nupkg -s "raypro-baget" -k admin --skip-duplicate'
 			}
 		}
 
 		stage('Pack & Push Tgs.MessageQueue.RabbitMQ') {
 			steps {
 				sh 'dotnet pack Tgs.MessageQueue.RabbitMQ/Tgs.MessageQueue.RabbitMQ.csproj -c $BuildConfiguration --no-build --no-restore'
-				sh 'dotnet nuget push Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg --source "raypro-baget" -k admin --skip-duplicate'
+				sh 'dotnet nuget push Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg -s "raypro-baget" -k admin --skip-duplicate'
 			}
 		}
 	}
