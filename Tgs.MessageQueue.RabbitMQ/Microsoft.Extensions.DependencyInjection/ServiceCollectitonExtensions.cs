@@ -55,7 +55,8 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			configuration.Services
 				.AddSingleton<RabbitMQConnectionManager>()
-				.AddSingleton<IMessageReceiver<RabbitSubscriptionSettings>, RabbitMQConnectionManager>()
+				.AddSingleton<IMessageReceiver<RabbitSubscriptionSettings>, RabbitMQConnectionManager>(
+					sp => sp.GetRequiredService<RabbitMQConnectionManager>())
 				.AddHostedService<MessageQueueBackground>()
 				.AddOptions<RabbitMQOptions>();
 		}
