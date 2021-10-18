@@ -59,6 +59,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			}
 			catch (Exception ex)
 			{
+				
 				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 			}
 		}
