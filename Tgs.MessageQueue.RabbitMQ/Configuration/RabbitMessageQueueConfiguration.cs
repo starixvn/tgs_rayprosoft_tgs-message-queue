@@ -32,7 +32,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 		}
 
-		public RabbitMessageQueueConfiguration AddHandler<THandler>(string queueName, bool autoAck = true) 
+		public RabbitMessageQueueConfiguration AddHandler<THandler>(string queueName, bool autoAck = true)
 			where THandler : IMessageHandler
 		{
 			_subscribeRegistrations.Add(new SubscribeRegistration<THandler>(queueName, autoAck));
@@ -49,6 +49,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			return this;
 		}
 
+		[Obsolete]
 		public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchangeName)
 		{
 			_coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchangeName));

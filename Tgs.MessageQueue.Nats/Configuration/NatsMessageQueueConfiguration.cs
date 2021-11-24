@@ -92,6 +92,7 @@ namespace Tgs.MessageQueue.Nats.Configuration
 			return this;
 		}
 
+		[Obsolete]
 		public NatsMessageQueueConfiguration ProcessAllSubjects()
 		{
 			if (!_isCustomExchange)
@@ -102,6 +103,7 @@ namespace Tgs.MessageQueue.Nats.Configuration
 			return this;
 		}
 
+		[Obsolete]
 		public NatsMessageQueueConfiguration ProcessSubjectPattern(string glob)
 		{
 			if (!_isCustomExchange)

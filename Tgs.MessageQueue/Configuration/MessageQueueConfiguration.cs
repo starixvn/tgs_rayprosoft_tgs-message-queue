@@ -22,6 +22,13 @@ namespace Tgs.MessageQueue.Configuration
 			return this;
 		}
 
+		public MessageQueueConfiguration ClearAllExchanges()
+		{
+			_messageExchanges.Clear();
+
+			return this;
+		}
+
 		public MessageQueueConfiguration RemoveExchange(IMessageExchange exchange)
 		{
 			_messageExchanges.Remove(exchange);
