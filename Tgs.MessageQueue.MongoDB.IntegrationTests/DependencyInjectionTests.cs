@@ -1,0 +1,132 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Messaging.Configuration;
+using NSubstitute;
+using Tgs.MessageQueue.MongoDB.Configuration;
+using MongoMessageQueue = MongoDB.Messaging.MessageQueue;
+
+namespace Tgs.MessageQueue.MongoDB.IntegrationTests;
+
+[TestClass]
+public class DependencyInjectionTests
+{
+	[TestMethod]
+	public void Can_Build_MessageService()
+	{
+		var services = new ServiceCollection();
+
+		services.AddMessageQueue()
+			.AddMongoMessageQueue(configuration =>
+			{
+				configuration
+					.DefineMessageQueue(
+						"test",
+						sp => MongoMessageQueue.Default,
+						sp => "mongodb://localhost/Messaging")
+					.DeclareQueue("queue")
+					.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1));
+			});
+
+		var serviceProvider = services.BuildServiceProvider();
+
+		var sut = serviceProvider.GetRequiredService<MongoDBMessageQueueBuilder>();
+
+		var actual = sut.Build(serviceProvider);
+	}
+
+	[TestMethod]
+	public void Can_Create_Handler()
+	{
+		var services = new ServiceCollection();
+
+		services
+			.AddLogging()
+			.AddMessageQueue()
+			.AddMongoMessageQueue(configuration =>
+			{
+				configuration
+					.DefineMessageQueue(
+						"test",
+						sp => MongoMessageQueue.Default,
+						sp => "mongodb://localhost/Messaging")
+					.DeclareQueue("queue")
+					.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1));
+			});
+
+		var serviceProvider = services.BuildServiceProvider();
+
+		var messageQueueBuilder = serviceProvider.GetRequiredService<MongoDBMessageQueueBuilder>();
+
+		var sut = messageQueueBuilder.Build(serviceProvider);
+
+		sut.Start();
+
+		var actual = sut.Processors.First().Configuration.SubscriberFactory();
+
+		Assert.IsNotNull(actual);
+	}
+
+	[TestMethod]
+	public void Can_Resolve_MongoDBMessageQueueBuilders()
+	{
+		var services = new ServiceCollection();
+
+		services.AddMessageQueue()
+			.AddMongoMessageQueue(configuration =>
+			{
+				configuration.DefineMessageQueue(
+					"test1",
+					sp => MongoMessageQueue.Default,
+					sp => "mongodb://localhost/Messaging");
+
+				configuration.DefineMessageQueue(
+					"test2",
+					sp => MongoMessageQueue.Default,
+					sp => "mongodb://localhost/Messaging");
+			});
+
+		var sut = services.BuildServiceProvider();
+
+		var actual = sut.GetServices<MongoDBMessageQueueBuilder>();
+
+		Assert.AreEqual(2, actual.Count());
+	}
+
+	[TestMethod]
+	public async Task Can_Send_Message()
+	{
+		var services = new ServiceCollection();
+
+		var fakeManager = Substitute.For<IQueueManager>();
+
+		var mongoMessageQueue = new MongoMessageQueue(fakeManager);
+
+		services
+			.AddLogging()
+			.AddMessageQueue()
+			.AddMongoMessageQueue(configuration =>
+			{
+				configuration
+					.DefineMessageQueue(
+						"test",
+						sp => mongoMessageQueue,
+						sp => "mongodb://localhost/Messaging")
+					.DeclareQueue("queue");
+			})
+			.AddMongoGlobPatternExchange("*", "test", "queue");
+
+		var serviceProvider = services.BuildServiceProvider();
+
+		foreach (var builder in serviceProvider.GetServices<MongoDBMessageQueueBuilder>())
+			builder.Build(serviceProvider);
+
+		var sut = serviceProvider.GetRequiredService<IMessageSender>();
+
+		await sut.PublishAsync("subject.test", new { Data = "Test" }.ToBson()).ConfigureAwait(false);
+	}
+}

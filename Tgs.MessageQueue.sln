@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue", "Tgs.MessageQueue\Tgs.MessageQueue.csproj", "{54DC81BF-B1F1-49A9-84BD-230C68FCBB10}"
 EndProject
@@ -18,6 +18,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.RabbitMQ", "Tgs.MessageQueue.RabbitMQ\Tgs.MessageQueue.RabbitMQ.csproj", "{0994DABC-137D-437B-A6A7-EB06B5A57EAC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.UnitTests", "Tgs.MessageQueue.UnitTests\Tgs.MessageQueue.UnitTests.csproj", "{43144541-90BE-4B59-AB15-576104D84ECA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.MongoDB", "Tgs.MessageQueue.MongoDB\Tgs.MessageQueue.MongoDB.csproj", "{3827392B-8477-4881-802E-2213376C7C38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.MongoDB.IntegrationTests", "Tgs.MessageQueue.MongoDB.IntegrationTests\Tgs.MessageQueue.MongoDB.IntegrationTests.csproj", "{ECC35B09-4619-4F41-8B09-B414CFE3E820}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{43144541-90BE-4B59-AB15-576104D84ECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43144541-90BE-4B59-AB15-576104D84ECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43144541-90BE-4B59-AB15-576104D84ECA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3827392B-8477-4881-802E-2213376C7C38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3827392B-8477-4881-802E-2213376C7C38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3827392B-8477-4881-802E-2213376C7C38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3827392B-8477-4881-802E-2213376C7C38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

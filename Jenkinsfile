@@ -38,6 +38,13 @@ pipeline {
 				sh 'dotnet nuget push Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg -s "raypro-baget" -k admin --skip-duplicate'
 			}
 		}
+
+		stage('Pack & Push Tgs.MessageQueue.MongoDB') {
+			steps {
+				sh 'dotnet pack Tgs.MessageQueue.MongoDB/Tgs.MessageQueue.MongoDB.csproj -c $BuildConfiguration --no-build --no-restore'
+				sh 'dotnet nuget push Tgs.MessageQueue.MongoDB/bin/$BuildConfiguration/*.nupkg -s "raypro-baget" -k admin --skip-duplicate'
+			}
+		}
 	}
 
 	post {
