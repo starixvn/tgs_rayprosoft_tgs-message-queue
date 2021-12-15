@@ -21,7 +21,11 @@ public class MongoDBMessageQueueConfiguration
 		Func<IServiceProvider, MongoDBMessageQueue> messageQueueFactory,
 		Func<IServiceProvider, string> connectionStringFactory)
 	{
-		var builder = new MongoDBMessageQueueBuilder(name, messageQueueFactory, connectionStringFactory);
+		var builder = new MongoDBMessageQueueBuilder(
+			Services,
+			name,
+			messageQueueFactory,
+			connectionStringFactory);
 
 		Services.AddSingleton(builder);
 

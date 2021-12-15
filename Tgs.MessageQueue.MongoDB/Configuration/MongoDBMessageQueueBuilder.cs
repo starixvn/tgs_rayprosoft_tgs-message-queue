@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Messaging.Service;
 using MongoDB.Messaging.Subscription;
 using MongoDBMessageQueue = MongoDB.Messaging.MessageQueue;
@@ -7,6 +8,7 @@ namespace Tgs.MessageQueue.MongoDB.Configuration;
 
 public class MongoDBMessageQueueBuilder
 {
+	private readonly IServiceCollection _services;
 	private readonly Func<IServiceProvider, MongoDBMessageQueue> _factory;
 	private readonly Func<IServiceProvider, string> _mongoConnectionStringFactory;
 	private List<string> _queueDeclares = new List<string>();
@@ -15,13 +17,14 @@ public class MongoDBMessageQueueBuilder
 	public string Name { get; }
 
 	public MongoDBMessageQueueBuilder(
+		IServiceCollection services,
 		string name,
 		Func<IServiceProvider, MongoDBMessageQueue> factory,
 		Func<IServiceProvider, string> mongoConnectionStringFactory)
 	{
 		if (string.IsNullOrWhiteSpace(name))
 			throw new ArgumentException($"'{nameof(name)}' 不得為 Null 或空白字元。", nameof(name));
-
+		_services = services ?? throw new ArgumentNullException(nameof(services));
 		Name = name;
 		_factory = factory ?? throw new ArgumentNullException(nameof(factory));
 		_mongoConnectionStringFactory = mongoConnectionStringFactory ?? throw new ArgumentNullException(nameof(mongoConnectionStringFactory));
@@ -30,6 +33,8 @@ public class MongoDBMessageQueueBuilder
 	public MongoDBMessageQueueBuilder AddHandler<THandler>(string queueName, TimeSpan pollTime, int workers = 1)
 		where THandler : class, IMessageHandler
 	{
+		_services.TryAddTransient<THandler>();
+
 		_subscriptions.Add(new SubscribeRegistration
 		{
 			QueueName = queueName,
