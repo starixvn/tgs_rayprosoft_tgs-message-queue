@@ -23,7 +23,8 @@ namespace Tgs.MessageQueue.RabbitMQ
 				UserName = options.UserName,
 				Password = options.Password,
 				VirtualHost = options.VirtualHost,
-				DispatchConsumersAsync = true
+				DispatchConsumersAsync = true,
+				ConsumerDispatchConcurrency = options.ConsumerDispatchConcurrency
 			};
 
 			_connection = _factory.CreateConnection();

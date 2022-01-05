@@ -14,5 +14,7 @@ namespace Tgs.MessageQueue.RabbitMQ
 		public string UserName { get; set; } = "guest";
 
 		public string VirtualHost { get; set; } = "/";
+
+		public int ConsumerDispatchConcurrency { get; set; } = 1;
 	}
 }
