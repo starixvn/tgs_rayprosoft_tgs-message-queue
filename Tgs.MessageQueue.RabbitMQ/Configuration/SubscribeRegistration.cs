@@ -44,11 +44,12 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 
 		private async Task HandleMessageAsync(MessageDataInfo dataInfo)
 		{
+			using var scope = dataInfo.ServiceProvider.CreateScope();
+			var connectionManager = scope.ServiceProvider.GetRequiredService<RabbitMQConnectionManager>();
+
 			try
 			{
-				using var scope = dataInfo.ServiceProvider.CreateScope();
 				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
-				var connectionManager = scope.ServiceProvider.GetRequiredService<RabbitMQConnectionManager>();
 
 				await handler
 					.HandleAsync(dataInfo.Args.Body.ToArray(), dataInfo.CancellationToken)
@@ -59,7 +60,6 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			}
 			catch (Exception ex)
 			{
-				
 				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 			}
 		}
