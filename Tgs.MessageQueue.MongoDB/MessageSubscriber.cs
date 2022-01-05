@@ -44,7 +44,9 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		{
 			var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
 			Task.Run(async () => await receiver.HandleAsync(payload.Data).ConfigureAwait(false)).Wait();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
 			return MessageResult.Successful;
 		}
@@ -68,7 +70,9 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		}
 	}
 
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
 	protected virtual ValueTask DisposeAsyncCore()
+#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
 	{
 		return ValueTask.CompletedTask;
 	}

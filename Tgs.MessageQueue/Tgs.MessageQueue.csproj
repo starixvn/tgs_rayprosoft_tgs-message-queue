@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net5.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
-		<Version>1.2.0</Version>
+		<Version>1.3.0</Version>
 		<Authors>Raypro</Authors>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
@@ -13,9 +13,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DotNet.Glob" Version="3.1.2" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.*" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.*" Condition="'$(TargetFramework)' == 'net6.0'" />
+		<PackageReference Include="DotNet.Glob" Version="3.1.3" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, 6.0)" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.64">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>

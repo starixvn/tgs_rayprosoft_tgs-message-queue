@@ -1,4 +1,7 @@
-﻿using RabbitMQ.Client.Events;
+﻿using System;
+using System.Threading.Tasks;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace Tgs.MessageQueue.RabbitMQ
 {
@@ -8,6 +11,8 @@ namespace Tgs.MessageQueue.RabbitMQ
 
 		public bool AutoAck { get; init; } = true;
 
-		public AsyncEventHandler<BasicDeliverEventArgs> EventHandler { get; set; } = default!;
+		public int ConsumerDispatchConcurrency { get; init; } = 1;
+
+		public Func<IModel, BasicDeliverEventArgs, Task> EventHandler { get; set; } = default!;
 	}
 }
