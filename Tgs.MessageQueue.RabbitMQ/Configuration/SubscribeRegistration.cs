@@ -9,16 +9,18 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 	internal class SubscribeRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 	{
 		private readonly bool _autoAck;
+		private readonly int _dispatchConcurrency;
 
 		public string Subject { get; }
 
-		public SubscribeRegistration(string subject, bool autoAck)
+		public SubscribeRegistration(string subject, bool autoAck, int dispatchConcurrency)
 		{
 			if (string.IsNullOrEmpty(subject))
 				throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
 
 			Subject = subject;
 			_autoAck = autoAck;
+			_dispatchConcurrency = dispatchConcurrency;
 		}
 
 		public ValueTask<IDisposable> SubscribeAsync(
@@ -30,25 +32,26 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 			{
 				Subject = Subject,
 				AutoAck = _autoAck,
-				EventHandler = (sender, args) =>
+				ConsumerDispatchConcurrency = _dispatchConcurrency,
+				EventHandler = (model, args) =>
 				{
 					return HandleMessageAsync(new MessageDataInfo
 					{
 						Args = args,
 						ServiceProvider = serviceProvider,
 						Logger = logger,
-						CancellationToken = cancellationToken
+						CancellationToken = cancellationToken,
+						Channel = model
 					});
 				}
 			});
 
 		private async Task HandleMessageAsync(MessageDataInfo dataInfo)
 		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
-			var connectionManager = scope.ServiceProvider.GetRequiredService<RabbitMQConnectionManager>();
-
 			try
 			{
+				using var scope = dataInfo.ServiceProvider.CreateScope();
+
 				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
 
 				await handler
@@ -56,7 +59,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration
 					.ConfigureAwait(false);
 
 				if (!_autoAck)
-					connectionManager.MessageQueueChannel.BasicAck(dataInfo.Args.DeliveryTag, false);
+					dataInfo.Channel.BasicAck(dataInfo.Args.DeliveryTag, false);
 			}
 			catch (Exception ex)
 			{

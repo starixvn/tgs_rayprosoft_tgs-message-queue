@@ -6,13 +6,17 @@ namespace Tgs.MessageQueue.RabbitMQ
 	internal class RabbitSubscription : IDisposable
 	{
 		private readonly IModel _channel;
-
+		private readonly IConnection _connection;
 		private readonly string _consumerTag;
 
 		private bool _disposedValue;
 
-		public RabbitSubscription(IModel channel, string consumerTag)
+		public RabbitSubscription(
+			IConnection connection,
+			IModel channel,
+			string consumerTag)
 		{
+			_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 			_channel = channel ?? throw new ArgumentNullException(nameof(channel));
 			_consumerTag = consumerTag;
 		}
@@ -31,6 +35,9 @@ namespace Tgs.MessageQueue.RabbitMQ
 				if (disposing)
 				{
 					_channel.BasicCancel(_consumerTag);
+
+					_connection.Dispose();
+					_channel.Dispose();
 				}
 				_disposedValue = true;
 			}

@@ -9,29 +9,28 @@ namespace Tgs.MessageQueue.RabbitMQ
 	internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitSubscriptionSettings>
 	{
 		private readonly IConnection _connection;
-		private readonly ConnectionFactory _factory;
+		private readonly RabbitMQOptions _options;
 		private bool _disposedValue;
 		public IModel MessageQueueChannel { get; }
 
 		public RabbitMQConnectionManager(IOptions<RabbitMQOptions> optionsAccessor)
 		{
-			var options = optionsAccessor.Value;
+			_options = optionsAccessor.Value;
 
-			_factory = new ConnectionFactory()
+			var factory = new ConnectionFactory()
 			{
-				Uri = options.RabbitMQUrl,
-				UserName = options.UserName,
-				Password = options.Password,
-				VirtualHost = options.VirtualHost,
+				Uri = _options.RabbitMQUrl,
+				UserName = _options.UserName,
+				Password = _options.Password,
+				VirtualHost = _options.VirtualHost,
 				DispatchConsumersAsync = true,
-				ConsumerDispatchConcurrency = options.ConsumerDispatchConcurrency
 			};
 
-			_connection = _factory.CreateConnection();
+			_connection = factory.CreateConnection();
 
 			MessageQueueChannel = _connection.CreateModel();
 
-			options.OnSetupQueueAndExchange?.Invoke(MessageQueueChannel);
+			_options.OnSetupQueueAndExchange?.Invoke(MessageQueueChannel);
 		}
 
 		public void Dispose()
@@ -44,15 +43,31 @@ namespace Tgs.MessageQueue.RabbitMQ
 
 		public ValueTask<IDisposable> SubscribeAsync(RabbitSubscriptionSettings settings)
 		{
+			var factory = new ConnectionFactory()
+			{
+				Uri = _options.RabbitMQUrl,
+				UserName = _options.UserName,
+				Password = _options.Password,
+				VirtualHost = _options.VirtualHost,
+				DispatchConsumersAsync = true,
+				ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency
+			};
+
+			var connection = factory.CreateConnection();
+			var channel = connection.CreateModel();
 			var consumer = new AsyncEventingBasicConsumer(MessageQueueChannel);
-			consumer.Received += settings.EventHandler;
+			consumer.Received += (sender, args) =>
+			{
+				return settings.EventHandler(channel, args);
+			};
 
 			var consumerTag = MessageQueueChannel.BasicConsume(
 				queue: settings.Subject,
 				autoAck: settings.AutoAck,
 				consumer: consumer);
 
-			return ValueTask.FromResult<IDisposable>(new RabbitSubscription(MessageQueueChannel, consumerTag));
+			return ValueTask.FromResult<IDisposable>(
+				  new RabbitSubscription(connection, channel, consumerTag));
 		}
 
 		protected virtual void Dispose(bool disposing)
