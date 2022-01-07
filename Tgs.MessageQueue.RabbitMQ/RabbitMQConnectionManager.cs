@@ -55,19 +55,19 @@ namespace Tgs.MessageQueue.RabbitMQ
 
 			var connection = factory.CreateConnection();
 			var channel = connection.CreateModel();
-			var consumer = new AsyncEventingBasicConsumer(MessageQueueChannel);
+			var consumer = new AsyncEventingBasicConsumer(channel);
 			consumer.Received += (sender, args) =>
 			{
 				return settings.EventHandler(channel, args);
 			};
 
-			var consumerTag = MessageQueueChannel.BasicConsume(
+			var consumerTag = channel.BasicConsume(
 				queue: settings.Subject,
 				autoAck: settings.AutoAck,
 				consumer: consumer);
 
 			return ValueTask.FromResult<IDisposable>(
-				  new RabbitSubscription(connection, channel, consumerTag));
+				new RabbitSubscription(connection, channel, consumerTag));
 		}
 
 		protected virtual void Dispose(bool disposing)
