@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NATS.Client;
 using Tgs.MessageQueue;
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
 				desc => desc.ServiceType == typeof(IHostedService)
 					&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
 			{
-				services.Remove(desc);
+				_ = services.Remove(desc);
 			}
 
 			return services
@@ -64,6 +65,9 @@ namespace Microsoft.Extensions.DependencyInjection
 				{
 					var connectionFactory = sp.GetRequiredService<ConnectionFactory>();
 					var queueOptions = sp.GetRequiredService<IOptions<NatsOptions>>().Value;
+					var logger = sp.GetRequiredService<ILogger<NatsOptions>>();
+
+					logger.LogDebug("Nats connection url: {0}", queueOptions.Url);
 
 					var options = ConnectionFactory.GetDefaultOptions();
 
