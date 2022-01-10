@@ -8,7 +8,7 @@ namespace Tgs.MessageQueue
 	internal class MultiplexerMessageSender : IMessageSender, IMessageExchange
 	{
 		private readonly IServiceProvider _serviceProvider;
-		private IMessageExchange[] _exchanges = Array.Empty<IMessageExchange>();
+		private readonly IMessageExchange[] _exchanges = Array.Empty<IMessageExchange>();
 
 		public MultiplexerMessageSender(IServiceProvider serviceProvider, IEnumerable<IMessageExchange> exchanges)
 		{

@@ -50,7 +50,8 @@ namespace Tgs.MessageQueue.RabbitMQ
 				Password = _options.Password,
 				VirtualHost = _options.VirtualHost,
 				DispatchConsumersAsync = true,
-				ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency
+				ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency,
+				
 			};
 
 			var connection = factory.CreateConnection();

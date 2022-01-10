@@ -12,7 +12,7 @@ public class MongoDBMessageQueueBuilder
 	private readonly Func<IServiceProvider, MongoDBMessageQueue> _factory;
 	private readonly Func<IServiceProvider, string> _mongoConnectionStringFactory;
 	private List<string> _queueDeclares = new List<string>();
-	private List<SubscribeRegistration> _subscriptions = new List<SubscribeRegistration>();
+	private List<SubscribeRegistration> _subscriptions = new();
 
 	public string Name { get; }
 

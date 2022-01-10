@@ -6,7 +6,7 @@ namespace Tgs.MessageQueue.Configuration
 {
 	public class MessageQueueConfiguration
 	{
-		private List<IMessageExchange> _messageExchanges = new();
+		private readonly List<IMessageExchange> _messageExchanges = new();
 
 		public IServiceCollection Services { get; }
 
@@ -31,7 +31,7 @@ namespace Tgs.MessageQueue.Configuration
 
 		public MessageQueueConfiguration RemoveExchange(IMessageExchange exchange)
 		{
-			_messageExchanges.Remove(exchange);
+			_ = _messageExchanges.Remove(exchange);
 
 			return this;
 		}

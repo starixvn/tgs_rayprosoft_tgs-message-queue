@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			var configuration = new MessageQueueConfiguration(services);
 
-			services.AddTransient<IMessageSender>(
+			_ = services.AddTransient<IMessageSender>(
 				sp => new MultiplexerMessageSender(sp, configuration.GetRegisterExchanges()));
 
 			return configuration;
