@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -72,6 +73,9 @@ namespace Microsoft.Extensions.DependencyInjection
 					var options = ConnectionFactory.GetDefaultOptions();
 
 					options.Url = queueOptions.Url;
+
+					if (logger.IsEnabled(LogLevel.Debug))
+						logger.LogDebug("NatsOptions: {0}", JsonSerializer.Serialize(options));
 
 					return ActivatorUtilities.CreateInstance<NatsMessageQueueService>(sp, connectionFactory.CreateConnection(options));
 				})
