@@ -74,9 +74,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
 					options.Url = queueOptions.Url;
 
-					if (logger.IsEnabled(LogLevel.Debug))
-						logger.LogDebug("NatsOptions: {0}", JsonSerializer.Serialize(options));
-
 					return ActivatorUtilities.CreateInstance<NatsMessageQueueService>(sp, connectionFactory.CreateConnection(options));
 				})
 				.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
