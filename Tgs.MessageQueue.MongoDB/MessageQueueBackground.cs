@@ -20,7 +20,7 @@ internal class MessageQueueBackground : BackgroundService
 		foreach (var svc in _queueServices)
 			svc.Start();
 
-		stoppingToken.Register(() =>
+		_ = stoppingToken.Register(() =>
 		{
 			foreach (var svc in _queueServices)
 				svc.Stop();

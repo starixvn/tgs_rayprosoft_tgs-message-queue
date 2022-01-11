@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Tgs.MessageQueue
+namespace Tgs.MessageQueue;
+
+public interface IMessageSender
 {
-	public interface IMessageSender
-	{
-		ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+	ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
 
-		ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+	ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
 
-		ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
-	}
+	ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
 }

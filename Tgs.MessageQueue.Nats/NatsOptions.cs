@@ -1,7 +1,6 @@
-﻿namespace Tgs.MessageQueue.Nats
+﻿namespace Tgs.MessageQueue.Nats;
+
+public class NatsOptions
 {
-	public class NatsOptions
-	{
-		public string Url { get; set; } = "nats://localhost:4222";
-	}
+	public string Url { get; set; } = "nats://localhost:4222";
 }

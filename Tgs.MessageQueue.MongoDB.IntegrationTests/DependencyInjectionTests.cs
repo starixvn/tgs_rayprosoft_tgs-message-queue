@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MongoDB.Bson;
@@ -23,17 +20,14 @@ public class DependencyInjectionTests
 	{
 		var services = new ServiceCollection();
 
-		services.AddMessageQueue()
-			.AddMongoMessageQueue(configuration =>
-			{
-				configuration
-					.DefineMessageQueue(
-						"test",
-						sp => MongoMessageQueue.Default,
-						sp => "mongodb://localhost/Messaging")
-					.DeclareQueue("queue")
-					.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1));
-			});
+		_ = services.AddMessageQueue()
+			.AddMongoMessageQueue(configuration => configuration
+				.DefineMessageQueue(
+					"test",
+					sp => MongoMessageQueue.Default,
+					sp => "mongodb://localhost/Messaging")
+				.DeclareQueue("queue")
+				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
 		var serviceProvider = services.BuildServiceProvider();
 
@@ -47,19 +41,16 @@ public class DependencyInjectionTests
 	{
 		var services = new ServiceCollection();
 
-		services
+		_ = services
 			.AddLogging()
 			.AddMessageQueue()
-			.AddMongoMessageQueue(configuration =>
-			{
-				configuration
-					.DefineMessageQueue(
-						"test",
-						sp => MongoMessageQueue.Default,
-						sp => "mongodb://localhost/Messaging")
-					.DeclareQueue("queue")
-					.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1));
-			});
+			.AddMongoMessageQueue(configuration => configuration
+				.DefineMessageQueue(
+					"test",
+					sp => MongoMessageQueue.Default,
+					sp => "mongodb://localhost/Messaging")
+				.DeclareQueue("queue")
+				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
 		var serviceProvider = services.BuildServiceProvider();
 
@@ -79,19 +70,16 @@ public class DependencyInjectionTests
 	{
 		var services = new ServiceCollection();
 
-		services
+		_ = services
 			.AddLogging()
 			.AddMessageQueue()
-			.AddMongoMessageQueue(configuration =>
-			{
-				configuration
-					.DefineMessageQueue(
-						"test",
-						sp => MongoMessageQueue.Default,
-						sp => "mongodb://localhost/Messaging")
-					.DeclareQueue("queue")
-					.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1));
-			});
+			.AddMongoMessageQueue(configuration => configuration
+				.DefineMessageQueue(
+					"test",
+					sp => MongoMessageQueue.Default,
+					sp => "mongodb://localhost/Messaging")
+				.DeclareQueue("queue")
+				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
 		var serviceProvider = services.BuildServiceProvider();
 
@@ -121,15 +109,15 @@ public class DependencyInjectionTests
 	{
 		var services = new ServiceCollection();
 
-		services.AddMessageQueue()
+		_ = services.AddMessageQueue()
 			.AddMongoMessageQueue(configuration =>
 			{
-				configuration.DefineMessageQueue(
+				_ = configuration.DefineMessageQueue(
 					"test1",
 					sp => MongoMessageQueue.Default,
 					sp => "mongodb://localhost/Messaging");
 
-				configuration.DefineMessageQueue(
+				_ = configuration.DefineMessageQueue(
 					"test2",
 					sp => MongoMessageQueue.Default,
 					sp => "mongodb://localhost/Messaging");
@@ -151,24 +139,21 @@ public class DependencyInjectionTests
 
 		var mongoMessageQueue = new MongoMessageQueue(fakeManager);
 
-		services
+		_ = services
 			.AddLogging()
 			.AddMessageQueue()
-			.AddMongoMessageQueue(configuration =>
-			{
-				configuration
-					.DefineMessageQueue(
-						"test",
-						sp => mongoMessageQueue,
-						sp => "mongodb://localhost/Messaging")
-					.DeclareQueue("queue");
-			})
+			.AddMongoMessageQueue(configuration => configuration
+				.DefineMessageQueue(
+					"test",
+					sp => mongoMessageQueue,
+					sp => "mongodb://localhost/Messaging")
+				.DeclareQueue("queue"))
 			.AddMongoGlobPatternExchange("*", "test", "queue");
 
 		var serviceProvider = services.BuildServiceProvider();
 
 		foreach (var builder in serviceProvider.GetServices<MongoDBMessageQueueBuilder>())
-			builder.Build(serviceProvider);
+			_ = builder.Build(serviceProvider);
 
 		var sut = serviceProvider.GetRequiredService<IMessageSender>();
 
@@ -184,19 +169,19 @@ public class DependencyInjectionTests
 
 		var mongoMessageQueue = new MongoMessageQueue(fakeManager);
 
-		services
+		_ = services
 			.AddLogging()
 			.AddMessageQueue()
 			.AddMongoMessageQueue(configuration =>
 			{
-				configuration
+				_ = configuration
 					.DefineMessageQueue(
 						"test1",
 						sp => mongoMessageQueue,
 						sp => "mongodb://localhost/Messaging")
 					.DeclareQueue("queue1");
 
-				configuration
+				_ = configuration
 					.DefineMessageQueue(
 						"test2",
 						sp => mongoMessageQueue,
@@ -209,7 +194,7 @@ public class DependencyInjectionTests
 		var serviceProvider = services.BuildServiceProvider();
 
 		foreach (var builder in serviceProvider.GetServices<MongoDBMessageQueueBuilder>())
-			builder.Build(serviceProvider);
+			_ = builder.Build(serviceProvider);
 
 		var sut = serviceProvider.GetRequiredService<IMessageSender>();
 

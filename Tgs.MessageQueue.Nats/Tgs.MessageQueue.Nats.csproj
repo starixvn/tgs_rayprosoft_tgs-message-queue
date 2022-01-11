@@ -10,6 +10,8 @@
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>tgs</PackageTags>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>10.0</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

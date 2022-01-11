@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Tgs.MessageQueue
+namespace Tgs.MessageQueue;
+
+public interface IMessageHandler
 {
-	public interface IMessageHandler
-	{
-		ValueTask HandleAsync(byte[] data, CancellationToken cancellationToken = default);
-	}
+	ValueTask HandleAsync(byte[] data, CancellationToken cancellationToken = default);
 }

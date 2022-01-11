@@ -3,16 +3,15 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using NATS.Client;
 
-namespace Tgs.MessageQueue.Nats.Configuration
+namespace Tgs.MessageQueue.Nats.Configuration;
+
+internal class MessageDataInfo
 {
-	internal class MessageDataInfo
-	{
-		public MsgHandlerEventArgs Args { get; init; } = default!;
+	public MsgHandlerEventArgs Args { get; init; } = default!;
 
-		public CancellationToken CancellationToken { get; init; }
+	public CancellationToken CancellationToken { get; init; }
 
-		public ILogger Logger { get; init; } = default!;
+	public ILogger Logger { get; init; } = default!;
 
-		public IServiceProvider ServiceProvider { get; init; } = default!;
-	}
+	public IServiceProvider ServiceProvider { get; init; } = default!;
 }

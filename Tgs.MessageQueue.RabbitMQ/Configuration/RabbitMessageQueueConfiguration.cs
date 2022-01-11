@@ -4,58 +4,57 @@ using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.RabbitMQ.Exchanges;
 
-namespace Tgs.MessageQueue.RabbitMQ.Configuration
+namespace Tgs.MessageQueue.RabbitMQ.Configuration;
+
+public class RabbitMessageQueueConfiguration
 {
-	public class RabbitMessageQueueConfiguration
+	private readonly MessageQueueConfiguration _coreConfiguration;
+
+	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
+
+	public IServiceCollection Services { get; }
+
+	public RabbitMessageQueueConfiguration(IServiceCollection services)
 	{
-		private readonly MessageQueueConfiguration _coreConfiguration;
+		Services = services ?? throw new ArgumentNullException(nameof(services));
 
-		private List<ISubscribeRegistration> _subscribeRegistrations = new List<ISubscribeRegistration>();
+		_coreConfiguration = services.AddMessageQueue();
 
-		public IServiceCollection Services { get; }
+		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+	}
 
-		public RabbitMessageQueueConfiguration(IServiceCollection services)
-		{
-			Services = services ?? throw new ArgumentNullException(nameof(services));
+	public RabbitMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
+	{
+		_coreConfiguration = coreConfiguration ?? throw new ArgumentNullException(nameof(coreConfiguration));
 
-			_coreConfiguration = services.AddMessageQueue();
+		Services = coreConfiguration.Services;
 
-			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
-		}
+		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+	}
 
-		public RabbitMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
-		{
-			_coreConfiguration = coreConfiguration ?? throw new ArgumentNullException(nameof(coreConfiguration));
+	public RabbitMessageQueueConfiguration AddHandler<THandler>(string queueName, bool autoAck = true, int dispatchConcurrency = 1)
+		where THandler : IMessageHandler
+	{
+		_subscribeRegistrations.Add(
+			new SubscribeRegistration<THandler>(queueName, autoAck, dispatchConcurrency));
 
-			Services = coreConfiguration.Services;
+		return this;
+	}
 
-			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
-		}
+	public RabbitMessageQueueConfiguration ConfigQueueOptions(Action<RabbitMQOptions, IServiceProvider> configure)
+	{
+		_ = Services
+			.AddOptions<RabbitMQOptions>()
+			.Configure(configure);
 
-		public RabbitMessageQueueConfiguration AddHandler<THandler>(string queueName, bool autoAck = true, int dispatchConcurrency = 1)
-			where THandler : IMessageHandler
-		{
-			_subscribeRegistrations.Add(
-				new SubscribeRegistration<THandler>(queueName, autoAck, dispatchConcurrency));
+		return this;
+	}
 
-			return this;
-		}
+	[Obsolete("此方法已過時")]
+	public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchangeName)
+	{
+		_ = _coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchangeName));
 
-		public RabbitMessageQueueConfiguration ConfigQueueOptions(Action<RabbitMQOptions, IServiceProvider> configure)
-		{
-			Services
-				.AddOptions<RabbitMQOptions>()
-				.Configure(configure);
-
-			return this;
-		}
-
-		[Obsolete]
-		public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchangeName)
-		{
-			_coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchangeName));
-
-			return this;
-		}
+		return this;
 	}
 }

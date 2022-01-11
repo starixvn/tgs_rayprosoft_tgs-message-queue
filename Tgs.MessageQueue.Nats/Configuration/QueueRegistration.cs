@@ -4,62 +4,61 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Tgs.MessageQueue.Nats.Configuration
+namespace Tgs.MessageQueue.Nats.Configuration;
+
+internal class QueueRegistration<THandler> : ISubscribeRegistration
+	where THandler : IMessageHandler
 {
-	internal class QueueRegistration<THandler> : ISubscribeRegistration
-		where THandler : IMessageHandler
+	public string Queue { get; }
+
+	public string Subject { get; }
+
+	public QueueRegistration(string subject, string queue)
 	{
-		public string Queue { get; }
+		if (string.IsNullOrEmpty(subject))
+			throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
+		if (string.IsNullOrEmpty(queue))
+			throw new ArgumentException($"'{nameof(queue)}' is not Null or Empty.", nameof(queue));
+		Subject = subject;
+		Queue = queue;
+	}
 
-		public string Subject { get; }
-
-		public QueueRegistration(string subject, string queue)
+	public ValueTask<IDisposable> SubscribeAsync(
+		IMessageReceiver<NatsSubscriptionSettings> messageReceiver,
+		IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
+		IServiceProvider serviceProvider,
+		ILogger logger,
+		CancellationToken cancellationToken)
+		=> queueReceiver.SubscribeAsync(new NatsQueueScriptionSettings
 		{
-			if (string.IsNullOrEmpty(subject))
-				throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
-			if (string.IsNullOrEmpty(queue))
-				throw new ArgumentException($"'{nameof(queue)}' is not Null or Empty.", nameof(queue));
-			Subject = subject;
-			Queue = queue;
-		}
-
-		public ValueTask<IDisposable> SubscribeAsync(
-			IMessageReceiver<NatsSubscriptionSettings> messageReceiver,
-			IMessageReceiver<NatsQueueScriptionSettings> queueReceiver,
-			IServiceProvider serviceProvider,
-			ILogger logger,
-			CancellationToken cancellationToken)
-			=> queueReceiver.SubscribeAsync(new NatsQueueScriptionSettings
+			Subject = Subject,
+			Queue = Queue,
+			EventHandler = (sender, args) =>
 			{
-				Subject = Subject,
-				Queue = Queue,
-				EventHandler = (sender, args) =>
+				_ = HandleMessageAsync(new MessageDataInfo
 				{
-					_ = HandleMessageAsync(new MessageDataInfo
-					{
-						Args = args,
-						ServiceProvider = serviceProvider,
-						Logger = logger,
-						CancellationToken = cancellationToken
-					});
-				}
-			});
+					Args = args,
+					ServiceProvider = serviceProvider,
+					Logger = logger,
+					CancellationToken = cancellationToken
+				});
+			}
+		});
 
-		private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
+	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
+	{
+		try
 		{
-			try
-			{
-				using var scope = dataInfo.ServiceProvider.CreateScope();
-				var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
+			using var scope = dataInfo.ServiceProvider.CreateScope();
+			var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
 
-				await handler
-					.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
-					.ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
-			}
+			await handler
+				.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
+				.ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 		}
 	}
 }

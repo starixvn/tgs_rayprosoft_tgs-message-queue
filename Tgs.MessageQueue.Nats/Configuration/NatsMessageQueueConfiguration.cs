@@ -4,118 +4,117 @@ using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.Exchanges;
 
-namespace Tgs.MessageQueue.Nats.Configuration
+namespace Tgs.MessageQueue.Nats.Configuration;
+
+public class NatsMessageQueueConfiguration
 {
-	public class NatsMessageQueueConfiguration
+	private readonly MessageQueueConfiguration _coreConfiguration;
+	private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
+	private bool _isCustomExchange;
+	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
+
+	public IServiceCollection Services { get; }
+
+	public NatsMessageQueueConfiguration(IServiceCollection services)
 	{
-		private readonly MessageQueueConfiguration _coreConfiguration;
-		private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
-		private bool _isCustomExchange;
-		private List<ISubscribeRegistration> _subscribeRegistrations = new List<ISubscribeRegistration>();
+		Services = services ?? throw new ArgumentNullException(nameof(services));
 
-		public IServiceCollection Services { get; }
+		_coreConfiguration = services.AddMessageQueue();
+		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
 
-		public NatsMessageQueueConfiguration(IServiceCollection services)
-		{
-			Services = services ?? throw new ArgumentNullException(nameof(services));
+		_ = _coreConfiguration.AddExchange(_processAllExchange);
+		_isCustomExchange = false;
 
-			_coreConfiguration = services.AddMessageQueue();
-			_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
+		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+	}
 
-			_coreConfiguration.AddExchange(_processAllExchange);
-			_isCustomExchange = false;
+	public NatsMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
+	{
+		Services = coreConfiguration.Services;
 
-			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
-		}
+		_coreConfiguration = coreConfiguration;
+		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
 
-		public NatsMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
-		{
-			Services = coreConfiguration.Services;
+		_ = _coreConfiguration.AddExchange(_processAllExchange);
+		_isCustomExchange = false;
 
-			_coreConfiguration = coreConfiguration;
-			_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
+		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
+	}
 
-			_coreConfiguration.AddExchange(_processAllExchange);
-			_isCustomExchange = false;
+	public NatsMessageQueueConfiguration AddHandler<THandler>(string subject) where THandler : IMessageHandler
+	{
+		_subscribeRegistrations.Add(new SubscribeRegistration<THandler>(subject));
 
-			Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
-		}
+		return this;
+	}
 
-		public NatsMessageQueueConfiguration AddHandler<THandler>(string subject) where THandler : IMessageHandler
-		{
-			_subscribeRegistrations.Add(new SubscribeRegistration<THandler>(subject));
+	public NatsMessageQueueConfiguration AddHandler<THandler>(string subject, string group) where THandler : IMessageHandler
+	{
+		_subscribeRegistrations.Add(new QueueRegistration<THandler>(subject, group));
 
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddProcessor<TProcessor>(string subject) where TProcessor : IMessageProcessor
+	{
+		_subscribeRegistrations.Add(new ProcessRegistration<TProcessor>(subject));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddProcessor<TProcessor>(string subject, string queue) where TProcessor : IMessageProcessor
+	{
+		_subscribeRegistrations.Add(new QueueProcessRegistration<TProcessor>(subject, queue));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddReplyHandler<THandler>(string subject) where THandler : IMessageHandler
+	{
+		_subscribeRegistrations.Add(new ReplyRegistration<THandler>(subject));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddReplyHandler<THandler>(string subject, string group) where THandler : IMessageHandler
+	{
+		_subscribeRegistrations.Add(new QueueReplyRegistration<THandler>(subject, group));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration ConfigQueueOptions(Action<NatsOptions, IServiceProvider> configure)
+	{
+		_ = Services
+			.AddOptions<NatsOptions>()
+			.Configure(configure);
+
+		return this;
+	}
+
+	[Obsolete("此方法已過時")]
+	public NatsMessageQueueConfiguration ProcessAllSubjects()
+	{
+		if (!_isCustomExchange)
 			return this;
-		}
 
-		public NatsMessageQueueConfiguration AddHandler<THandler>(string subject, string group) where THandler : IMessageHandler
+		_ = _coreConfiguration.AddExchange(_processAllExchange);
+
+		return this;
+	}
+
+	[Obsolete("此方法已過時")]
+	public NatsMessageQueueConfiguration ProcessSubjectPattern(string glob)
+	{
+		if (!_isCustomExchange)
 		{
-			_subscribeRegistrations.Add(new QueueRegistration<THandler>(subject, group));
+			_ = _coreConfiguration.RemoveExchange(_processAllExchange);
 
-			return this;
+			_isCustomExchange = true;
 		}
 
-		public NatsMessageQueueConfiguration AddProcessor<TProcessor>(string subject) where TProcessor : IMessageProcessor
-		{
-			_subscribeRegistrations.Add(new ProcessRegistration<TProcessor>(subject));
+		_ = _coreConfiguration.AddGlobPatternExchange<NatsMessageQueueService>(glob);
 
-			return this;
-		}
-
-		public NatsMessageQueueConfiguration AddProcessor<TProcessor>(string subject, string queue) where TProcessor : IMessageProcessor
-		{
-			_subscribeRegistrations.Add(new QueueProcessRegistration<TProcessor>(subject, queue));
-
-			return this;
-		}
-
-		public NatsMessageQueueConfiguration AddReplyHandler<THandler>(string subject) where THandler : IMessageHandler
-		{
-			_subscribeRegistrations.Add(new ReplyRegistration<THandler>(subject));
-
-			return this;
-		}
-
-		public NatsMessageQueueConfiguration AddReplyHandler<THandler>(string subject, string group) where THandler : IMessageHandler
-		{
-			_subscribeRegistrations.Add(new QueueReplyRegistration<THandler>(subject, group));
-
-			return this;
-		}
-
-		public NatsMessageQueueConfiguration ConfigQueueOptions(Action<NatsOptions, IServiceProvider> configure)
-		{
-			Services
-				.AddOptions<NatsOptions>()
-				.Configure(configure);
-
-			return this;
-		}
-
-		[Obsolete]
-		public NatsMessageQueueConfiguration ProcessAllSubjects()
-		{
-			if (!_isCustomExchange)
-				return this;
-
-			_coreConfiguration.AddExchange(_processAllExchange);
-
-			return this;
-		}
-
-		[Obsolete]
-		public NatsMessageQueueConfiguration ProcessSubjectPattern(string glob)
-		{
-			if (!_isCustomExchange)
-			{
-				_coreConfiguration.RemoveExchange(_processAllExchange);
-
-				_isCustomExchange = true;
-			}
-
-			_coreConfiguration.AddGlobPatternExchange<NatsMessageQueueService>(glob);
-
-			return this;
-		}
+		return this;
 	}
 }

@@ -6,14 +6,11 @@ namespace Tgs.MessageQueue.MongoDB.Configuration;
 
 public class MongoDBMessageQueueConfiguration
 {
-	private readonly MessageQueueConfiguration _messageQueueConfiguration;
-
 	public IServiceCollection Services { get; }
 
 	public MongoDBMessageQueueConfiguration(MessageQueueConfiguration messageQueueConfiguration)
 	{
 		Services = messageQueueConfiguration.Services;
-		_messageQueueConfiguration = messageQueueConfiguration ?? throw new ArgumentNullException(nameof(messageQueueConfiguration));
 	}
 
 	public MongoDBMessageQueueBuilder DefineMessageQueue(
@@ -27,7 +24,7 @@ public class MongoDBMessageQueueConfiguration
 			messageQueueFactory,
 			connectionStringFactory);
 
-		Services.AddSingleton(builder);
+		_ = Services.AddSingleton(builder);
 
 		return builder;
 	}

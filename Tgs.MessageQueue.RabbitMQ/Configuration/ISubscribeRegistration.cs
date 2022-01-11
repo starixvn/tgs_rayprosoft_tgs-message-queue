@@ -3,14 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Tgs.MessageQueue.RabbitMQ.Configuration
+namespace Tgs.MessageQueue.RabbitMQ.Configuration;
+
+internal interface ISubscribeRegistration
 {
-	internal interface ISubscribeRegistration
-	{
-		ValueTask<IDisposable> SubscribeAsync(
-			IMessageReceiver<RabbitSubscriptionSettings> messageReceiver,
-			IServiceProvider serviceProvider,
-			ILogger logger,
-			CancellationToken cancellationToken);
-	}
+	ValueTask<IDisposable> SubscribeAsync(
+		IMessageReceiver<RabbitSubscriptionSettings> messageReceiver,
+		IServiceProvider serviceProvider,
+		ILogger logger,
+		CancellationToken cancellationToken);
 }
