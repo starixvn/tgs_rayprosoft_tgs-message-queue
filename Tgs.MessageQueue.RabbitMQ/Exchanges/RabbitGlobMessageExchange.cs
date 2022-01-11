@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNet.Globbing;
+﻿using DotNet.Globbing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Tgs.MessageQueue.RabbitMQ.Exchanges;

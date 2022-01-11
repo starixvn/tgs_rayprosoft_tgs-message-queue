@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Tgs.MessageQueue.Nats;
+﻿namespace Tgs.MessageQueue.Nats;
 
 internal class NoopMessageQueueService
 	: IMessageSender, IMessageReceiver<NatsSubscriptionSettings>, IMessageReceiver<NatsQueueScriptionSettings>

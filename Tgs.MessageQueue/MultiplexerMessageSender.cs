@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Tgs.MessageQueue;
+﻿namespace Tgs.MessageQueue;
 
 internal class MultiplexerMessageSender : IMessageSender, IMessageExchange
 {
-	private readonly IServiceProvider _serviceProvider;
 	private readonly IMessageExchange[] _exchanges = Array.Empty<IMessageExchange>();
+	private readonly IServiceProvider _serviceProvider;
 
 	public MultiplexerMessageSender(IServiceProvider serviceProvider, IEnumerable<IMessageExchange> exchanges)
 	{

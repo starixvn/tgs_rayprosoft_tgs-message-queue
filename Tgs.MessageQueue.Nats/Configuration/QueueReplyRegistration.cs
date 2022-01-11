@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -80,7 +78,7 @@ internal class QueueReplyRegistration<THandler> : ISubscribeRegistration where T
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 
 			await replySender
-				.PublishFailAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>())
+				.PublishFailAsync(dataInfo.Args.Message.Reply, Encoding.UTF8.GetBytes(ex.ToString()))
 				.ConfigureAwait(false);
 		}
 	}

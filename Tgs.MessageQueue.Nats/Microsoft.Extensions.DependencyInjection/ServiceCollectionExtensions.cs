@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text.Json;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NATS.Client;

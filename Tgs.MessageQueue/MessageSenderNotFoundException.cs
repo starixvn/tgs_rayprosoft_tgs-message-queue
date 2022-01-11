@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Tgs.MessageQueue;
+﻿namespace Tgs.MessageQueue;
 
 public class MessageSenderNotFoundException : Exception
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Tgs.MessageQueue;
+﻿namespace Tgs.MessageQueue;
 
 public static class MessageSenderExtensions
 {

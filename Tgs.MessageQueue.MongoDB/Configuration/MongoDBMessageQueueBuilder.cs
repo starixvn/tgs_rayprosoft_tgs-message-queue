@@ -8,10 +8,10 @@ namespace Tgs.MessageQueue.MongoDB.Configuration;
 
 public class MongoDBMessageQueueBuilder
 {
-	private readonly IServiceCollection _services;
 	private readonly Func<IServiceProvider, MongoDBMessageQueue> _factory;
 	private readonly Func<IServiceProvider, string> _mongoConnectionStringFactory;
 	private readonly List<string> _queueDeclares = new();
+	private readonly IServiceCollection _services;
 	private readonly List<SubscribeRegistration> _subscriptions = new();
 
 	public string Name { get; }

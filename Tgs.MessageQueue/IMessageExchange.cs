@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Tgs.MessageQueue;
+﻿namespace Tgs.MessageQueue;
 
 public interface IMessageExchange
 {

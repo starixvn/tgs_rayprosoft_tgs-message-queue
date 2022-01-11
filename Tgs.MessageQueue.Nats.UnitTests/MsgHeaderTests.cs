@@ -6,17 +6,18 @@ namespace Tgs.MessageQueue.Nats.UnitTests;
 public class MsgHeaderTests
 {
 	[Test]
-	public void MsgHeader_Set_Fail_Should_Identify()
+	public void Msg_Check_Header_Has_Value()
 	{
-		var sut = new MsgHeader();
+		var sut = new Msg
+		{
+			Header = new MsgHeader()
+		};
 
 		var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
 
-		sut.Add(headerValue.Name, headerValue.Value);
+		sut.Header.Add(headerValue.Name, headerValue.Value);
 
-		var actual = sut.GetValues(headerValue.Name);
-
-		Assert.IsTrue(actual?.Length > 0);
+		Assert.IsTrue(sut.HasHeaders);
 	}
 
 	[Test]
@@ -30,17 +31,16 @@ public class MsgHeaderTests
 	}
 
 	[Test]
-	public void Msg_Check_Header_Has_Value()
+	public void MsgHeader_Set_Fail_Should_Identify()
 	{
-		var sut = new Msg
-		{
-			Header = new MsgHeader()
-		};
+		var sut = new MsgHeader();
 
 		var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
 
-		sut.Header.Add(headerValue.Name, headerValue.Value);
+		sut.Add(headerValue.Name, headerValue.Value);
 
-		Assert.IsTrue(sut.HasHeaders);
+		var actual = sut.GetValues(headerValue.Name);
+
+		Assert.IsTrue(actual?.Length > 0);
 	}
 }

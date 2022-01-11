@@ -16,7 +16,7 @@ internal class NatsMessageQueueService
 	{
 		var msg = new Msg(subject, data)
 		{
-			Header = NatsMessageQueueService.MakeMsgHeader(header)
+			Header = MakeMsgHeader(header)
 		};
 
 		_connection.Publish(msg);
@@ -28,7 +28,7 @@ internal class NatsMessageQueueService
 	{
 		var msg = new Msg(subject, data)
 		{
-			Header = NatsMessageQueueService.MakeMsgHeader(header)
+			Header = MakeMsgHeader(header)
 		};
 
 		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);

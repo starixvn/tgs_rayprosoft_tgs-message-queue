@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Tgs.MessageQueue.RabbitMQ;
+﻿namespace Tgs.MessageQueue.RabbitMQ;
 
 internal class NoopMessageQueueService : IMessageSender
 {

@@ -1,27 +1,10 @@
-using NUnit.Framework;
 using NSubstitute;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace Tgs.MessageQueue.UnitTests;
 
 public class MultiplexerMessageSenderTests
 {
-	[Test]
-	public void Not_Register_Exchange_Will_Throw_Exception()
-	{
-		var fakeServiceProvider = Substitute.For<IServiceProvider>();
-
-		var sut = new MultiplexerMessageSender(
-			fakeServiceProvider,
-			Array.Empty<IMessageExchange>());
-
-		_ = Assert.ThrowsAsync<MessageSenderNotFoundException>(
-			async () => await sut.PublishAsync("test", Array.Empty<byte>()));
-	}
-
 	[Test]
 	public async Task Exchange_Will_Select_First_Match_Sender()
 	{
@@ -51,5 +34,18 @@ public class MultiplexerMessageSenderTests
 
 		_ = exchange2.Received(0)
 			.GetMessageSender(Arg.Any<IServiceProvider>());
+	}
+
+	[Test]
+	public void Not_Register_Exchange_Will_Throw_Exception()
+	{
+		var fakeServiceProvider = Substitute.For<IServiceProvider>();
+
+		var sut = new MultiplexerMessageSender(
+			fakeServiceProvider,
+			Array.Empty<IMessageExchange>());
+
+		_ = Assert.ThrowsAsync<MessageSenderNotFoundException>(
+			async () => await sut.PublishAsync("test", Array.Empty<byte>()));
 	}
 }

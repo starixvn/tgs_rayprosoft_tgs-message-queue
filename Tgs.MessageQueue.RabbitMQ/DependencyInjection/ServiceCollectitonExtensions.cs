@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Tgs.MessageQueue;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.RabbitMQ;
@@ -10,8 +8,23 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectitonExtensions
 {
+	public static IServiceCollection AddFakeRabbitMessageQueue(
+		this IServiceCollection services)
+	{
+		foreach (var desc in services.Where(
+			desc => desc.ServiceType == typeof(IHostedService)
+				&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
+		{
+			_ = services.Remove(desc);
+		}
+
+		return services
+			.AddSingleton<NoopMessageQueueService>()
+			.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>());
+	}
+
 	public static IServiceCollection AddRabbitMessageQueue(
-		this IServiceCollection services,
+			this IServiceCollection services,
 		Action<RabbitMessageQueueConfiguration> configure)
 	{
 		var configuration = new RabbitMessageQueueConfiguration(services);
@@ -36,22 +49,7 @@ public static class ServiceCollectitonExtensions
 		return configuration;
 	}
 
-	public static IServiceCollection AddFakeRabbitMessageQueue(
-		this IServiceCollection services)
-	{
-		foreach (var desc in services.Where(
-			desc => desc.ServiceType == typeof(IHostedService)
-				&& desc.ImplementationType == typeof(MessageQueueBackground)).ToArray())
-		{
-			_ = services.Remove(desc);
-		}
-
-		return services
-			.AddSingleton<NoopMessageQueueService>()
-			.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>());
-	}
-
-	private static void InitialRabbitMessageQueueConfiguration(RabbitMessageQueueConfiguration configuration) 
+	private static void InitialRabbitMessageQueueConfiguration(RabbitMessageQueueConfiguration configuration)
 		=> configuration.Services
 			.AddSingleton<RabbitMQConnectionManager>()
 			.AddSingleton<IMessageReceiver<RabbitSubscriptionSettings>, RabbitMQConnectionManager>(

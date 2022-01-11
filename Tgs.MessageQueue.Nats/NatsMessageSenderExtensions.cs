@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Tgs.MessageQueue.Nats;
+﻿namespace Tgs.MessageQueue.Nats;
 
 public static class NatsMessageSenderExtensions
 {

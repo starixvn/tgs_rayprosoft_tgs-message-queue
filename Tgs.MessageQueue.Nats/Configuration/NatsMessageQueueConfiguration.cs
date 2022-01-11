@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.Exchanges;
 
@@ -10,9 +8,8 @@ public class NatsMessageQueueConfiguration
 {
 	private readonly MessageQueueConfiguration _coreConfiguration;
 	private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
-	private bool _isCustomExchange;
 	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
-
+	private bool _isCustomExchange;
 	public IServiceCollection Services { get; }
 
 	public NatsMessageQueueConfiguration(IServiceCollection services)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tgs.MessageQueue.Nats.Configuration;
 
@@ -10,11 +6,11 @@ namespace Tgs.MessageQueue.Nats;
 
 internal class MessageQueueBackground : BackgroundService
 {
+	private readonly ILogger<MessageQueueBackground> _logger;
 	private readonly IMessageReceiver<NatsSubscriptionSettings> _messageReceiver;
 	private readonly IMessageReceiver<NatsQueueScriptionSettings> _queueReceiver;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly IEnumerable<ISubscribeRegistration> _subscribes;
-	private readonly ILogger<MessageQueueBackground> _logger;
 
 	public MessageQueueBackground(
 		IMessageReceiver<NatsSubscriptionSettings> messageReceiver,

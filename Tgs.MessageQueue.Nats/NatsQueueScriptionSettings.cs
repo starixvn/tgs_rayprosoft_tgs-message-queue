@@ -1,5 +1,4 @@
-﻿using System;
-using NATS.Client;
+﻿using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats;
 

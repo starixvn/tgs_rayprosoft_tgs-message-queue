@@ -5,9 +5,9 @@ namespace Tgs.MessageQueue.MongoDB.Exchanges;
 
 internal class MongoDBGlobMessageExchange : IMessageExchange
 {
+	private readonly Glob _glob;
 	private readonly string _managerName;
 	private readonly string _queueName;
-	private readonly Glob _glob;
 
 	public MongoDBGlobMessageExchange(string pattern, string managerName, string queueName)
 	{

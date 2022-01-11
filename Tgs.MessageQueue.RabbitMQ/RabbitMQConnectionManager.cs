@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -51,7 +49,6 @@ internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitS
 			VirtualHost = _options.VirtualHost,
 			DispatchConsumersAsync = true,
 			ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency,
-
 		};
 
 		var connection = factory.CreateConnection();

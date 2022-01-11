@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats.Configuration;
