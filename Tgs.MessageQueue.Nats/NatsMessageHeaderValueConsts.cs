@@ -1,7 +1,6 @@
-﻿namespace Tgs.MessageQueue.Nats
+﻿namespace Tgs.MessageQueue.Nats;
+
+public static class NatsMessageHeaderValueConsts
 {
-	public static class NatsMessageHeaderValueConsts
-	{
-		public static readonly MessageHeaderValue FailMessageHeaderValue = new MessageHeaderValue("Nats_Fail", string.Empty);
-	}
+	public static readonly MessageHeaderValue FailMessageHeaderValue = new("Nats_Fail", string.Empty);
 }

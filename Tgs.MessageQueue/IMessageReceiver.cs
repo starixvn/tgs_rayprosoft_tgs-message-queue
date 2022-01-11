@@ -1,10 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace Tgs.MessageQueue;
 
-namespace Tgs.MessageQueue
+public interface IMessageReceiver<TSubscriptionSettings>
 {
-	public interface IMessageReceiver<TSubscriptionSettings>
-	{
-		ValueTask<IDisposable> SubscribeAsync(TSubscriptionSettings settings);
-	}
+	ValueTask<IDisposable> SubscribeAsync(TSubscriptionSettings settings);
 }

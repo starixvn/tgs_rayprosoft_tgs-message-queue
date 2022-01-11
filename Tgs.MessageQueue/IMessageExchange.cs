@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace Tgs.MessageQueue;
 
-namespace Tgs.MessageQueue
+public interface IMessageExchange
 {
-	public interface IMessageExchange
-	{
-		IMessageSender GetMessageSender(IServiceProvider serviceProvider);
+	IMessageSender GetMessageSender(IServiceProvider serviceProvider);
 
-		bool Match(string subject, IEnumerable<MessageHeaderValue> header);
-	}
+	bool Match(string subject, IEnumerable<MessageHeaderValue> header);
 }

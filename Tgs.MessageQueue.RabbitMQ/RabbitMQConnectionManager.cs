@@ -1,91 +1,87 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Tgs.MessageQueue.RabbitMQ
+namespace Tgs.MessageQueue.RabbitMQ;
+
+internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitSubscriptionSettings>
 {
-	internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitSubscriptionSettings>
+	private readonly IConnection _connection;
+	private readonly RabbitMQOptions _options;
+	private bool _disposedValue;
+	public IModel MessageQueueChannel { get; }
+
+	public RabbitMQConnectionManager(IOptions<RabbitMQOptions> optionsAccessor)
 	{
-		private readonly IConnection _connection;
-		private readonly RabbitMQOptions _options;
-		private bool _disposedValue;
-		public IModel MessageQueueChannel { get; }
+		_options = optionsAccessor.Value;
 
-		public RabbitMQConnectionManager(IOptions<RabbitMQOptions> optionsAccessor)
+		var factory = new ConnectionFactory()
 		{
-			_options = optionsAccessor.Value;
+			Uri = _options.RabbitMQUrl,
+			UserName = _options.UserName,
+			Password = _options.Password,
+			VirtualHost = _options.VirtualHost,
+			DispatchConsumersAsync = true,
+		};
 
-			var factory = new ConnectionFactory()
-			{
-				Uri = _options.RabbitMQUrl,
-				UserName = _options.UserName,
-				Password = _options.Password,
-				VirtualHost = _options.VirtualHost,
-				DispatchConsumersAsync = true,
-			};
+		_connection = factory.CreateConnection();
 
-			_connection = factory.CreateConnection();
+		MessageQueueChannel = _connection.CreateModel();
 
-			MessageQueueChannel = _connection.CreateModel();
+		_options.OnSetupQueueAndExchange?.Invoke(MessageQueueChannel);
+	}
 
-			_options.OnSetupQueueAndExchange?.Invoke(MessageQueueChannel);
-		}
+	public void Dispose()
+	{
+		// 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
+		Dispose(disposing: true);
 
-		public void Dispose()
+		GC.SuppressFinalize(this);
+	}
+
+	public ValueTask<IDisposable> SubscribeAsync(RabbitSubscriptionSettings settings)
+	{
+		var factory = new ConnectionFactory()
 		{
-			// 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-			Dispose(disposing: true);
+			Uri = _options.RabbitMQUrl,
+			UserName = _options.UserName,
+			Password = _options.Password,
+			VirtualHost = _options.VirtualHost,
+			DispatchConsumersAsync = true,
+			ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency,
+		};
 
-			GC.SuppressFinalize(this);
-		}
-
-		public ValueTask<IDisposable> SubscribeAsync(RabbitSubscriptionSettings settings)
+		var connection = factory.CreateConnection();
+		var channel = connection.CreateModel();
+		var consumer = new AsyncEventingBasicConsumer(channel);
+		consumer.Received += (sender, args) =>
 		{
-			var factory = new ConnectionFactory()
-			{
-				Uri = _options.RabbitMQUrl,
-				UserName = _options.UserName,
-				Password = _options.Password,
-				VirtualHost = _options.VirtualHost,
-				DispatchConsumersAsync = true,
-				ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency,
-				
-			};
+			return settings.EventHandler(channel, args);
+		};
 
-			var connection = factory.CreateConnection();
-			var channel = connection.CreateModel();
-			var consumer = new AsyncEventingBasicConsumer(channel);
-			consumer.Received += (sender, args) =>
-			{
-				return settings.EventHandler(channel, args);
-			};
+		var consumerTag = channel.BasicConsume(
+			queue: settings.Subject,
+			autoAck: settings.AutoAck,
+			consumer: consumer);
 
-			var consumerTag = channel.BasicConsume(
-				queue: settings.Subject,
-				autoAck: settings.AutoAck,
-				consumer: consumer);
+		return ValueTask.FromResult<IDisposable>(
+			new RabbitSubscription(connection, channel, consumerTag));
+	}
 
-			return ValueTask.FromResult<IDisposable>(
-				new RabbitSubscription(connection, channel, consumerTag));
-		}
-
-		protected virtual void Dispose(bool disposing)
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
 		{
-			if (!_disposedValue)
+			if (disposing)
 			{
-				if (disposing)
-				{
-					MessageQueueChannel?.Close();
-					MessageQueueChannel?.Dispose();
+				MessageQueueChannel?.Close();
+				MessageQueueChannel?.Dispose();
 
-					_connection.Close();
-					_connection.Dispose();
-				}
-
-				_disposedValue = true;
+				_connection.Close();
+				_connection.Dispose();
 			}
+
+			_disposedValue = true;
 		}
 	}
 }

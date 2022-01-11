@@ -1,11 +1,6 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿namespace Tgs.MessageQueue;
 
-namespace Tgs.MessageQueue
+public interface IMessageExceptionProcessor
 {
-	public interface IMessageExceptionProcessor
-	{
-		ValueTask<byte[]> HandleExceptionAsync(byte[] data, Exception exception, CancellationToken cancellationToken = default);
-	}
+	ValueTask<byte[]> HandleExceptionAsync(byte[] data, Exception exception, CancellationToken cancellationToken = default);
 }

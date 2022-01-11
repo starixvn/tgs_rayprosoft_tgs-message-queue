@@ -71,6 +71,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 	}
 
 #pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
+
 	protected virtual ValueTask DisposeAsyncCore()
 #pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
 	{

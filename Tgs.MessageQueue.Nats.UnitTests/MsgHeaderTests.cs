@@ -1,46 +1,46 @@
 using NATS.Client;
 using NUnit.Framework;
 
-namespace Tgs.MessageQueue.Nats.UnitTests
+namespace Tgs.MessageQueue.Nats.UnitTests;
+
+public class MsgHeaderTests
 {
-	public class MsgHeaderTests
+	[Test]
+	public void Msg_Check_Header_Has_Value()
 	{
-		[Test]
-		public void MsgHeader_Set_Fail_Should_Identify()
+		var sut = new Msg
 		{
-			var sut = new MsgHeader();
+			Header = new MsgHeader()
+		};
 
-			var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
+		var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
 
-			sut.Add(headerValue.Name, headerValue.Value);
+		sut.Header.Add(headerValue.Name, headerValue.Value);
 
-			var actual = sut.GetValues(headerValue.Name);
+		Assert.IsTrue(sut.HasHeaders);
+	}
 
-			Assert.IsTrue(actual?.Length > 0);
-		}
+	[Test]
+	public void MsgHeader_Not_Set_Fail_Should_Identify()
+	{
+		var sut = new MsgHeader();
 
-		[Test]
-		public void MsgHeader_Not_Set_Fail_Should_Identify()
-		{
-			var sut = new MsgHeader();
+		var actual = sut.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name);
 
-			var actual = sut.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name);
+		Assert.IsFalse(actual?.Length > 0);
+	}
 
-			Assert.IsFalse(actual?.Length > 0);
-		}
+	[Test]
+	public void MsgHeader_Set_Fail_Should_Identify()
+	{
+		var sut = new MsgHeader();
 
-		[Test]
-		public void Msg_Check_Header_Has_Value()
-		{
-			var sut = new Msg();
+		var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
 
-			sut.Header = new MsgHeader();
+		sut.Add(headerValue.Name, headerValue.Value);
 
-			var headerValue = NatsMessageHeaderValueConsts.FailMessageHeaderValue;
+		var actual = sut.GetValues(headerValue.Name);
 
-			sut.Header.Add(headerValue.Name, headerValue.Value);
-
-			Assert.IsTrue(sut.HasHeaders);
-		}
+		Assert.IsTrue(actual?.Length > 0);
 	}
 }

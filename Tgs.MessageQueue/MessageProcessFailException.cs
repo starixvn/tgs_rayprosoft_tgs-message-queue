@@ -1,20 +1,17 @@
-﻿using System;
+﻿namespace Tgs.MessageQueue;
 
-namespace Tgs.MessageQueue
+public class MessageProcessFailException : Exception
 {
-	public class MessageProcessFailException : Exception
+	public byte[]? ResponseData { get; }
+
+	public MessageProcessFailException()
+		: this(null)
 	{
-		public byte[]? ResponseData { get; }
+	}
 
-		public MessageProcessFailException()
-			: this(null)
-		{
-		}
-
-		public MessageProcessFailException(byte[]? responseData)
-			: base("MessageQueue remote process fail.")
-		{
-			ResponseData = responseData;
-		}
+	public MessageProcessFailException(byte[]? responseData)
+		: base("MessageQueue remote process fail.")
+	{
+		ResponseData = responseData;
 	}
 }

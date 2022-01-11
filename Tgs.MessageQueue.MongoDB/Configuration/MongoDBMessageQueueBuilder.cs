@@ -8,11 +8,11 @@ namespace Tgs.MessageQueue.MongoDB.Configuration;
 
 public class MongoDBMessageQueueBuilder
 {
-	private readonly IServiceCollection _services;
 	private readonly Func<IServiceProvider, MongoDBMessageQueue> _factory;
 	private readonly Func<IServiceProvider, string> _mongoConnectionStringFactory;
-	private List<string> _queueDeclares = new List<string>();
-	private List<SubscribeRegistration> _subscriptions = new();
+	private readonly List<string> _queueDeclares = new();
+	private readonly IServiceCollection _services;
+	private readonly List<SubscribeRegistration> _subscriptions = new();
 
 	public string Name { get; }
 
@@ -59,15 +59,15 @@ public class MongoDBMessageQueueBuilder
 		manager
 			.Configure(builder =>
 			{
-				builder.ConnectionString(_mongoConnectionStringFactory(serviceProvider));
+				_ = builder.ConnectionString(_mongoConnectionStringFactory(serviceProvider));
 
 				foreach (var queueName in _queueDeclares)
-					builder.Queue(
+					_ = builder.Queue(
 						queueBuilder => queueBuilder
 							.Name(queueName));
 
 				foreach (var registration in _subscriptions)
-					builder.Subscribe(
+					_ = builder.Subscribe(
 						subBuilder => subBuilder
 							.Queue(registration.QueueName)
 							.Handler(() =>

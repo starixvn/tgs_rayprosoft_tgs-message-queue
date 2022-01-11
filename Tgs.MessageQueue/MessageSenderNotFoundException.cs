@@ -1,15 +1,12 @@
-﻿using System;
+﻿namespace Tgs.MessageQueue;
 
-namespace Tgs.MessageQueue
+public class MessageSenderNotFoundException : Exception
 {
-	public class MessageSenderNotFoundException : Exception
-	{
-		public string Subject { get; }
+	public string Subject { get; }
 
-		public MessageSenderNotFoundException(string subject)
-			: base($"The subject({subject}) can't find sender.")
-		{
-			Subject = subject;
-		}
+	public MessageSenderNotFoundException(string subject)
+		: base($"The subject({subject}) can't find sender.")
+	{
+		Subject = subject;
 	}
 }

@@ -1,14 +1,12 @@
-﻿using System;
-using NATS.Client;
+﻿using NATS.Client;
 
-namespace Tgs.MessageQueue.Nats
+namespace Tgs.MessageQueue.Nats;
+
+internal record NatsQueueScriptionSettings
 {
-	internal record NatsQueueScriptionSettings
-	{
-		public string Subject { get; set; } = default!;
+	public string Subject { get; set; } = default!;
 
-		public string Queue { get; set; } = default!;
+	public string Queue { get; set; } = default!;
 
-		public EventHandler<MsgHandlerEventArgs> EventHandler { get; set; } = default!;
-	}
+	public EventHandler<MsgHandlerEventArgs> EventHandler { get; set; } = default!;
 }
