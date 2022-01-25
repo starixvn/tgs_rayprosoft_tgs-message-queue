@@ -4,7 +4,7 @@
 		<TargetFrameworks>net5.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<PackageId>Tgs.MessageQueue.RabbitMQ</PackageId>
-		<Version>1.4.0</Version>
+		<Version>1.5.0</Version>
 		<Authors>Raypro</Authors>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Messaging;
 using MongoDB.Messaging.Subscription;
@@ -8,6 +9,8 @@ namespace Tgs.MessageQueue.MongoDB;
 internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposable
 	where TReceiver : class, IMessageHandler
 {
+	private static readonly ActivitySource _MongoDBActivitySource = new("Tgs.MessageQueue.MongoDB");
+
 	private readonly ILogger<MessageSubscriber<TReceiver>> _logger;
 	private readonly IServiceProvider _serviceProvider;
 	private bool _disposedValue;
@@ -36,6 +39,11 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 
 	public MessageResult Process(ProcessContext processContext)
 	{
+		using var activity = _MongoDBActivitySource.StartActivity(processContext.Container.Name);
+
+		_ = (activity?.AddTag("mq", "MongoDB")
+			.AddTag("handler", typeof(TReceiver).Name));
+
 		var payload = processContext.Data<MongoMessage>();
 
 		using var scope = _serviceProvider.CreateScope();
@@ -52,6 +60,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		}
 		catch (Exception ex)
 		{
+			_ = (activity?.AddTag("error", true));
 			_logger.LogError(ex, "Process fail.");
 
 			return MessageResult.Error;

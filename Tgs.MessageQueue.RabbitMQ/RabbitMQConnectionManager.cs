@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -8,6 +9,8 @@ namespace Tgs.MessageQueue.RabbitMQ;
 
 internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitSubscriptionSettings>
 {
+	internal static readonly ActivitySource _RabbitMQActivitySource = new("Tgs.MessageQueue.RabbitMQ");
+
 	private readonly IConnection _connection;
 	private readonly ILogger<RabbitMQConnectionManager> _logger;
 	private readonly RabbitMQOptions _options;

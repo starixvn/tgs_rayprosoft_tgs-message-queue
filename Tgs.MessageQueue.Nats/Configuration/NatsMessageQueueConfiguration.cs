@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.Exchanges;
 
@@ -6,10 +7,12 @@ namespace Tgs.MessageQueue.Nats.Configuration;
 
 public class NatsMessageQueueConfiguration
 {
+	internal static ActivitySource _NatsActivitySource = new("Tgs.MessageQueue.Nats");
+
 	private readonly MessageQueueConfiguration _coreConfiguration;
 	private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
 	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
-	private bool _isCustomExchange;
+
 	public IServiceCollection Services { get; }
 
 	public NatsMessageQueueConfiguration(IServiceCollection services)
@@ -20,7 +23,6 @@ public class NatsMessageQueueConfiguration
 		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
 
 		_ = _coreConfiguration.AddExchange(_processAllExchange);
-		_isCustomExchange = false;
 
 		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 	}
@@ -33,7 +35,6 @@ public class NatsMessageQueueConfiguration
 		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
 
 		_ = _coreConfiguration.AddExchange(_processAllExchange);
-		_isCustomExchange = false;
 
 		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 	}
@@ -85,32 +86,6 @@ public class NatsMessageQueueConfiguration
 		_ = Services
 			.AddOptions<NatsOptions>()
 			.Configure(configure);
-
-		return this;
-	}
-
-	[Obsolete("此方法已過時")]
-	public NatsMessageQueueConfiguration ProcessAllSubjects()
-	{
-		if (!_isCustomExchange)
-			return this;
-
-		_ = _coreConfiguration.AddExchange(_processAllExchange);
-
-		return this;
-	}
-
-	[Obsolete("此方法已過時")]
-	public NatsMessageQueueConfiguration ProcessSubjectPattern(string glob)
-	{
-		if (!_isCustomExchange)
-		{
-			_ = _coreConfiguration.RemoveExchange(_processAllExchange);
-
-			_isCustomExchange = true;
-		}
-
-		_ = _coreConfiguration.AddGlobPatternExchange<NatsMessageQueueService>(glob);
 
 		return this;
 	}

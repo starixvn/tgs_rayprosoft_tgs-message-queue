@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.UnitTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.MongoDB", "Tgs.MessageQueue.MongoDB\Tgs.MessageQueue.MongoDB.csproj", "{3827392B-8477-4881-802E-2213376C7C38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.MongoDB.IntegrationTests", "Tgs.MessageQueue.MongoDB.IntegrationTests\Tgs.MessageQueue.MongoDB.IntegrationTests.csproj", "{ECC35B09-4619-4F41-8B09-B414CFE3E820}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.MongoDB.IntegrationTests", "Tgs.MessageQueue.MongoDB.IntegrationTests\Tgs.MessageQueue.MongoDB.IntegrationTests.csproj", "{ECC35B09-4619-4F41-8B09-B414CFE3E820}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1A6AF482-F96A-4395-9EB5-6F2D21144175}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +62,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{91B8EE2B-EE81-49B4-9B63-AA82ABA38CBB} = {1A6AF482-F96A-4395-9EB5-6F2D21144175}
+		{43144541-90BE-4B59-AB15-576104D84ECA} = {1A6AF482-F96A-4395-9EB5-6F2D21144175}
+		{ECC35B09-4619-4F41-8B09-B414CFE3E820} = {1A6AF482-F96A-4395-9EB5-6F2D21144175}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E770AD5B-6B88-419F-883D-C5ACDA44DDE8}
