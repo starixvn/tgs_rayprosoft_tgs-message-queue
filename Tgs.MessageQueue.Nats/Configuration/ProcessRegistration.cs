@@ -40,6 +40,11 @@ internal class ProcessRegistration<TProcessor> : ISubscribeRegistration
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
+
+		_ = (activity?.AddTag("mq", "NATS")
+			.AddTag("handler", typeof(TProcessor).Name));
+
 		try
 		{
 			using var scope = dataInfo.ServiceProvider.CreateScope();
@@ -50,6 +55,7 @@ internal class ProcessRegistration<TProcessor> : ISubscribeRegistration
 		}
 		catch (Exception ex)
 		{
+			_ = (activity?.AddTag("error", true));
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 		}
 	}

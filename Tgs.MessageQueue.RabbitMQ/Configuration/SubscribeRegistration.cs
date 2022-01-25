@@ -45,6 +45,11 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 
 	private async Task HandleMessageAsync(MessageDataInfo dataInfo)
 	{
+		using var activity = RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity(Subject);
+
+		_ = (activity?.AddTag("mq", "RabbitMQ")
+			.AddTag("handler", typeof(THandler).Name));
+
 		try
 		{
 			using var scope = dataInfo.ServiceProvider.CreateScope();
@@ -60,6 +65,7 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 		}
 		catch (Exception ex)
 		{
+			_ = (activity?.AddTag("error", true));
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 		}
 	}
