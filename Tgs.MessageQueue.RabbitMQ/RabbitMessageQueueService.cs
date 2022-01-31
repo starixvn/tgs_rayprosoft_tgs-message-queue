@@ -13,7 +13,10 @@ internal class RabbitMessageQueueService : IMessageSender
 		_exchangeName = exchangeName ?? throw new ArgumentNullException(nameof(exchangeName));
 	}
 
-	public ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+		=> throw new NotSupportedException();
+
+	public ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
 		var properties = BuildBasicProperties(header);
 
@@ -22,10 +25,10 @@ internal class RabbitMessageQueueService : IMessageSender
 		return ValueTask.CompletedTask;
 	}
 
-	public ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 		=> throw new NotSupportedException();
 
-	public ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 		=> throw new NotSupportedException();
 
 	private IBasicProperties BuildBasicProperties(IEnumerable<MessageHeaderValue> header)

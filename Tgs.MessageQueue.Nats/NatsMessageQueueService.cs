@@ -12,9 +12,9 @@ internal class NatsMessageQueueService
 		_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 	}
 
-	public ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
-		var msg = new Msg(subject, data)
+		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
@@ -24,9 +24,9 @@ internal class NatsMessageQueueService
 		return ValueTask.CompletedTask;
 	}
 
-	public async ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
-		var msg = new Msg(subject, data)
+		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
@@ -39,9 +39,9 @@ internal class NatsMessageQueueService
 			: reply.Data;
 	}
 
-	public async ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
-		var msg = new Msg(subject, data)
+		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = NatsMessageQueueService.MakeMsgHeader(header)
 		};
@@ -77,5 +77,22 @@ internal class NatsMessageQueueService
 			msgHeader.Add(headerValue.Name, headerValue.Value);
 
 		return msgHeader;
+	}
+
+	public async ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	{
+		var msg = new Msg(subject, data.ToArray())
+		{
+			Header = MakeMsgHeader(header)
+		};
+
+		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+
+		var responseData = reply.HasHeaders
+			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
+			? throw new MessageProcessFailException(reply.Data)
+			: reply.Data;
+
+		return new NatsAnswer(responseData, msg.Reply, this);
 	}
 }

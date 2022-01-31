@@ -2,13 +2,17 @@
 
 public static class NatsMessageSenderExtensions
 {
-	public static ValueTask PublishFailAsync(this IMessageSender messageSender, string subject, byte[] data)
-				=> messageSender.PublishAsync(
+	public static ValueTask PublishFailAsync(this IMessageSender messageSender, string subject, ReadOnlyMemory<byte> data)
+		=> messageSender.PublishAsync(
 			subject,
 			data,
 			new[] { NatsMessageHeaderValueConsts.FailMessageHeaderValue });
 
-	public static ValueTask PublishFailAsync(this IMessageSender messageSender, string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public static ValueTask PublishFailAsync(
+		this IMessageSender messageSender,
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header)
 		=> messageSender.PublishAsync(
 			subject,
 			data,

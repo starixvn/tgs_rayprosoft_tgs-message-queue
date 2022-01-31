@@ -13,7 +13,7 @@ internal class MongoDbMessageQueueService : IMessageSender
 		_queueName = queueName ?? throw new ArgumentNullException(nameof(queueName));
 	}
 
-	public async ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
 		var message = await _mongoMessageQueue.Publish(
 			m => m
@@ -26,7 +26,11 @@ internal class MongoDbMessageQueueService : IMessageSender
 				.Correlation(Guid.NewGuid().ToString()));
 	}
 
-	public ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header) => throw new NotSupportedException();
+	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+		=> throw new NotSupportedException();
 
-	public ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header) => throw new NotSupportedException();
+	public ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+		=> throw new NotSupportedException();
+	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+		=> throw new NotSupportedException();
 }
