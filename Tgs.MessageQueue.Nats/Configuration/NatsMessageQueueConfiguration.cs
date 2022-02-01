@@ -81,6 +81,20 @@ public class NatsMessageQueueConfiguration
 		return this;
 	}
 
+	public NatsMessageQueueConfiguration AddSession<TSession>(string subject) where TSession : IMessageSession
+	{
+		_subscribeRegistrations.Add(new SessionRegistration<TSession>(subject));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddSession<TSession>(string subject, string group) where TSession : IMessageSession
+	{
+		_subscribeRegistrations.Add(new QueueSessionRegistration<TSession>(subject, group));
+
+		return this;
+	}
+
 	public NatsMessageQueueConfiguration ConfigQueueOptions(Action<NatsOptions, IServiceProvider> configure)
 	{
 		_ = Services

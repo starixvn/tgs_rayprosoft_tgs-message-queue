@@ -12,6 +12,23 @@ internal class NatsMessageQueueService
 		_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 	}
 
+	public async ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	{
+		var msg = new Msg(subject, data.ToArray())
+		{
+			Header = MakeMsgHeader(header)
+		};
+
+		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+
+		var responseData = reply.HasHeaders
+			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
+				? throw new MessageProcessFailException(reply.Data)
+				: reply.Data;
+
+		return new NatsAnswer(responseData, msg.Reply, this);
+	}
+
 	public ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
 	{
 		var msg = new Msg(subject, data.ToArray())
@@ -35,8 +52,8 @@ internal class NatsMessageQueueService
 
 		return reply.HasHeaders
 			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
-			? throw new MessageProcessFailException(reply.Data)
-			: reply.Data;
+				? throw new MessageProcessFailException(reply.Data)
+				: reply.Data;
 	}
 
 	public async ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
@@ -49,7 +66,7 @@ internal class NatsMessageQueueService
 		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
 
 		if (reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
+	&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
 			throw new MessageProcessFailException(reply.Data);
 	}
 
@@ -77,22 +94,5 @@ internal class NatsMessageQueueService
 			msgHeader.Add(headerValue.Name, headerValue.Value);
 
 		return msgHeader;
-	}
-
-	public async ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
-	{
-		var msg = new Msg(subject, data.ToArray())
-		{
-			Header = MakeMsgHeader(header)
-		};
-
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
-
-		var responseData = reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
-			? throw new MessageProcessFailException(reply.Data)
-			: reply.Data;
-
-		return new NatsAnswer(responseData, msg.Reply, this);
 	}
 }
