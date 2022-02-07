@@ -13,22 +13,39 @@ internal class RabbitMessageQueueService : IMessageSender
 		_exchangeName = exchangeName ?? throw new ArgumentNullException(nameof(exchangeName));
 	}
 
-	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
 
-	public ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
 		var properties = BuildBasicProperties(header);
 
+		cancellationToken.ThrowIfCancellationRequested();
 		_channel.BasicPublish(_exchangeName, subject, properties, data);
 
 		return ValueTask.CompletedTask;
 	}
 
-	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
 
-	public ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
 
 	private IBasicProperties BuildBasicProperties(IEnumerable<MessageHeaderValue> header)

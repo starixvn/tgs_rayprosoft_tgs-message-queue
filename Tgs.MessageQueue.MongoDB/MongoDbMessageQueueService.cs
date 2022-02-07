@@ -13,8 +13,21 @@ internal class MongoDbMessageQueueService : IMessageSender
 		_queueName = queueName ?? throw new ArgumentNullException(nameof(queueName));
 	}
 
-	public async ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
+		=> throw new NotSupportedException();
+
+	public async ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+
 		var message = await _mongoMessageQueue.Publish(
 			m => m
 				.Queue(_queueName)
@@ -26,11 +39,17 @@ internal class MongoDbMessageQueueService : IMessageSender
 				.Correlation(Guid.NewGuid().ToString()));
 	}
 
-	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
 
-	public ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
-		=> throw new NotSupportedException();
-	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
 }

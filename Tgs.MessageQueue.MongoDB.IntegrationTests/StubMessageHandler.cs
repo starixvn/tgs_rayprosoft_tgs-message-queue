@@ -2,5 +2,5 @@
 
 internal class StubMessageHandler : IMessageHandler
 {
-	public ValueTask HandleAsync(byte[] data, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+	public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 }

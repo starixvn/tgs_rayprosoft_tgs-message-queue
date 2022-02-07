@@ -12,14 +12,19 @@ internal class NatsMessageQueueService
 		_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 	}
 
-	public async ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
 
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+		cancellationToken.ThrowIfCancellationRequested();
+		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
 
 		var responseData = reply.HasHeaders
 			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
@@ -29,26 +34,36 @@ internal class NatsMessageQueueService
 		return new NatsAnswer(responseData, msg.Reply, this);
 	}
 
-	public ValueTask PublishAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
 
+		cancellationToken.ThrowIfCancellationRequested();
 		_connection.Publish(msg);
 
 		return ValueTask.CompletedTask;
 	}
 
-	public async ValueTask<ReadOnlyMemory<byte>> RequestAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
 
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+		cancellationToken.ThrowIfCancellationRequested();
+		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
 
 		return reply.HasHeaders
 			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
@@ -56,17 +71,22 @@ internal class NatsMessageQueueService
 				: reply.Data;
 	}
 
-	public async ValueTask SendAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = NatsMessageQueueService.MakeMsgHeader(header)
 		};
 
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+		cancellationToken.ThrowIfCancellationRequested();
+		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
 
 		if (reply.HasHeaders
-	&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
+			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
 			throw new MessageProcessFailException(reply.Data);
 	}
 
