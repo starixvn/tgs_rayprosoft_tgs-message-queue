@@ -72,7 +72,7 @@ internal class ProcessRegistration<TProcessor> : ISubscribeRegistration
 				.ConfigureAwait(false);
 
 			await replySender
-				.PublishAsync(dataInfo.Args.Message.Reply, replyData)
+				.PublishAsync(dataInfo.Args.Message.Reply, replyData, dataInfo.CancellationToken)
 				.ConfigureAwait(false);
 		}
 		catch (Exception ex)
@@ -85,7 +85,7 @@ internal class ProcessRegistration<TProcessor> : ISubscribeRegistration
 					.ConfigureAwait(false);
 			else
 				await replySender
-					.PublishFailAsync(dataInfo.Args.Message.Reply, Encoding.UTF8.GetBytes(ex.ToString()))
+					.PublishFailAsync(dataInfo.Args.Message.Reply, Encoding.UTF8.GetBytes(ex.ToString()), dataInfo.CancellationToken)
 					.ConfigureAwait(false);
 		}
 	}

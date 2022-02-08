@@ -90,7 +90,10 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 					.ConfigureAwait(false);
 			else
 				await replySender
-					.PublishFailAsync(dataInfo.Args.Message.Reply, Encoding.UTF8.GetBytes(ex.ToString()))
+					.PublishFailAsync(
+						dataInfo.Args.Message.Reply,
+						Encoding.UTF8.GetBytes(ex.ToString()),
+						dataInfo.CancellationToken)
 					.ConfigureAwait(false);
 		}
 	}

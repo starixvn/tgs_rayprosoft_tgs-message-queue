@@ -70,7 +70,7 @@ internal class ReplyRegistration<THandler> : ISubscribeRegistration where THandl
 				.ConfigureAwait(false);
 
 			await replySender
-				.PublishAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>())
+				.PublishAsync(dataInfo.Args.Message.Reply, Array.Empty<byte>(), dataInfo.CancellationToken)
 				.ConfigureAwait(false);
 		}
 		catch (Exception ex)
@@ -78,7 +78,10 @@ internal class ReplyRegistration<THandler> : ISubscribeRegistration where THandl
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 
 			await replySender
-				.PublishFailAsync(dataInfo.Args.Message.Reply, Encoding.UTF8.GetBytes(ex.ToString()))
+				.PublishFailAsync(
+					dataInfo.Args.Message.Reply,
+					Encoding.UTF8.GetBytes(ex.ToString()),
+					dataInfo.CancellationToken)
 				.ConfigureAwait(false);
 		}
 	}

@@ -12,12 +12,12 @@ internal record NatsQuestion : Question
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
 	}
 
-	public override ValueTask<Answer> AskAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
-		=> _messageSender.AskAsync(_replySubject, data, header);
+	public override ValueTask<Answer> AskAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
+		=> _messageSender.AskAsync(_replySubject, data, header, cancellationToken);
 
-	public override ValueTask CompleteAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
-		=> _messageSender.PublishAsync(_replySubject, data, header);
+	public override ValueTask CompleteAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
+		=> _messageSender.PublishAsync(_replySubject, data, header, cancellationToken);
 
-	public override ValueTask FailAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header)
-		=> _messageSender.PublishFailAsync(_replySubject, data, header);
+	public override ValueTask FailAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
+		=> _messageSender.PublishFailAsync(_replySubject, data, header, cancellationToken: cancellationToken);
 }
