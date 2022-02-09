@@ -1,4 +1,5 @@
-﻿using NATS.Client;
+﻿using System.Text;
+using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats;
 
@@ -57,18 +58,18 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
-		var msg = new Msg(subject, data.ToArray())
-		{
-			Header = MakeMsgHeader(header)
-		};
+		var answer = await AskAsync(
+			subject,
+			data,
+			header,
+			cancellationToken).ConfigureAwait(false);
 
-		cancellationToken.ThrowIfCancellationRequested();
-		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
+		if (answer.CanResponse)
+			await answer
+				.FailAsync(Encoding.UTF8.GetBytes("Send can't complete."), cancellationToken)
+				.ConfigureAwait(false);
 
-		return reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
-				? throw new MessageProcessFailException(reply.Data)
-				: reply.Data;
+		return answer.Result;
 	}
 
 	public async ValueTask SendAsync(
@@ -77,17 +78,16 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
-		var msg = new Msg(subject, data.ToArray())
-		{
-			Header = NatsMessageQueueService.MakeMsgHeader(header)
-		};
+		var answer = await AskAsync(
+			subject,
+			data,
+			header,
+			cancellationToken).ConfigureAwait(false);
 
-		cancellationToken.ThrowIfCancellationRequested();
-		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
-
-		if (reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
-			throw new MessageProcessFailException(reply.Data);
+		if (answer.CanResponse)
+			await answer
+				.FailAsync(Encoding.UTF8.GetBytes("Send can't complete."), cancellationToken)
+				.ConfigureAwait(false);
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(NatsQueueScriptionSettings settings)

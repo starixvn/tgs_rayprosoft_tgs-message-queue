@@ -7,11 +7,13 @@ namespace Tgs.MessageQueue.Nats.Configuration;
 internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistration
 	where TMessageSession : IMessageSession
 {
+	private readonly bool _isSession;
+
 	public string Queue { get; }
 
 	public string Subject { get; }
 
-	public QueueSessionRegistration(string subject, string queue)
+	public QueueSessionRegistration(string subject, string queue, bool isSession = true)
 	{
 		if (string.IsNullOrEmpty(subject))
 			throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
@@ -19,6 +21,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 			throw new ArgumentException($"'{nameof(queue)}' is not Null or Empty.", nameof(queue));
 		Subject = subject;
 		Queue = queue;
+		_isSession = isSession;
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(
@@ -42,6 +45,15 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 				});
 			}
 		});
+
+	private Question CreateQuestion(MessageDataInfo dataInfo, IMessageSender replySender)
+			=> _isSession
+			? new NatsQuestion(
+				dataInfo.Args.Message.Data,
+				dataInfo.Args.Message.Reply,
+				replySender)
+			: new NatsAction(
+				dataInfo.Args.Message.Data);
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
@@ -72,10 +84,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 	{
 		try
 		{
-			var question = new NatsQuestion(
-				dataInfo.Args.Message.Data,
-				dataInfo.Args.Message.Reply,
-				replySender);
+			var question = CreateQuestion(dataInfo, replySender);
 			await handler
 				.HandleAsync(question, dataInfo.CancellationToken)
 				.ConfigureAwait(false);
@@ -88,7 +97,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 				_ = await exceptionProcessor
 					.HandleExceptionAsync(dataInfo.Args.Message.Data, ex, dataInfo.CancellationToken)
 					.ConfigureAwait(false);
-			else
+			else if (string.IsNullOrEmpty(dataInfo.Args.Message.Reply))
 				await replySender
 					.PublishFailAsync(
 						dataInfo.Args.Message.Reply,

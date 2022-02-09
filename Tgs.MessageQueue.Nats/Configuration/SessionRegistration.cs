@@ -7,13 +7,16 @@ namespace Tgs.MessageQueue.Nats.Configuration;
 internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 	where TMessageSession : IMessageSession
 {
+	private readonly bool _isSession;
+
 	public string Subject { get; }
 
-	public SessionRegistration(string subject)
+	public SessionRegistration(string subject, bool isSession = true)
 	{
 		if (string.IsNullOrEmpty(subject))
 			throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
 		Subject = subject;
+		_isSession = isSession;
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(
@@ -36,6 +39,15 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 				});
 			}
 		});
+
+	private Question CreateQuestion(MessageDataInfo dataInfo, IMessageSender replySender)
+		=> _isSession
+			? new NatsQuestion(
+				dataInfo.Args.Message.Data,
+				dataInfo.Args.Message.Reply,
+				replySender)
+			: new NatsAction(
+				dataInfo.Args.Message.Data);
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
@@ -66,10 +78,8 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 	{
 		try
 		{
-			var question = new NatsQuestion(
-				dataInfo.Args.Message.Data,
-				dataInfo.Args.Message.Reply,
-				replySender);
+			var question = CreateQuestion(dataInfo, replySender);
+			dataInfo.Logger.LogInformation($"ReplySubject: {dataInfo.Args.Message.Reply}");
 			await handler
 				.HandleAsync(question, dataInfo.CancellationToken)
 				.ConfigureAwait(false);
@@ -82,7 +92,7 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 				_ = await exceptionProcessor
 					.HandleExceptionAsync(dataInfo.Args.Message.Data, ex, dataInfo.CancellationToken)
 					.ConfigureAwait(false);
-			else
+			else if (string.IsNullOrEmpty(dataInfo.Args.Message.Reply))
 				await replySender
 					.PublishFailAsync(
 						dataInfo.Args.Message.Reply,

@@ -5,6 +5,8 @@ internal record NatsQuestion : Question
 	private readonly string _replySubject;
 	private readonly IMessageSender _messageSender;
 
+	public override bool CanResponse => !string.IsNullOrEmpty(_replySubject);
+
 	public NatsQuestion(ReadOnlyMemory<byte> data, string replySubject, IMessageSender messageSender)
 	{
 		Data = data;
@@ -13,11 +15,18 @@ internal record NatsQuestion : Question
 	}
 
 	public override ValueTask<Answer> AskAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
-		=> _messageSender.AskAsync(_replySubject, data, header, cancellationToken);
+		=> CanResponse
+			? _messageSender.AskAsync(_replySubject, data, header, cancellationToken)
+			: throw new NatsReplySubjectNullException();
 
 	public override ValueTask CompleteAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
-		=> _messageSender.PublishAsync(_replySubject, data, header, cancellationToken);
+		=> CanResponse
+			? _messageSender.PublishAsync(_replySubject, data, header, cancellationToken)
+			: throw new NatsReplySubjectNullException();
 
 	public override ValueTask FailAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
-		=> _messageSender.PublishFailAsync(_replySubject, data, header, cancellationToken: cancellationToken);
+		=> CanResponse
+			? _messageSender.PublishFailAsync(_replySubject, data, header, cancellationToken: cancellationToken)
+			: throw new NatsReplySubjectNullException();
+
 }
