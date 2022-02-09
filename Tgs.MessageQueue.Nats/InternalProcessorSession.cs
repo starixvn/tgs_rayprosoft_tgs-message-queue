@@ -25,7 +25,7 @@ internal class InternalProcessorSession<TProcessor> : IMessageSession
 			.ConfigureAwait(false);
 
 		await question
-			.CompleteAsync(Array.Empty<byte>(), cancellationToken)
+			.CompleteAsync(result, cancellationToken)
 			.ConfigureAwait(false);
 	}
 }

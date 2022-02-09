@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.Extensions.Logging;
 using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats;
@@ -7,10 +8,20 @@ internal class NatsMessageQueueService
 	: IMessageSender, IMessageReceiver<NatsSubscriptionSettings>, IMessageReceiver<NatsQueueScriptionSettings>
 {
 	private readonly IConnection _connection;
+	private readonly ILogger<NatsMessageQueueService> _logger;
+	private readonly IReplyPromiseStore _replyPromiseStore;
+	private readonly string? _sessionReplySubject;
 
-	public NatsMessageQueueService(IConnection connection)
+	public NatsMessageQueueService(
+		IConnection connection,
+		string? sessionReplySubject,
+		IReplyPromiseStore replyPromiseStore,
+		ILogger<NatsMessageQueueService> logger)
 	{
 		_connection = connection ?? throw new ArgumentNullException(nameof(connection));
+		_sessionReplySubject = sessionReplySubject;
+		_replyPromiseStore = replyPromiseStore ?? throw new ArgumentNullException(nameof(replyPromiseStore));
+		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
 	public async ValueTask<Answer> AskAsync(
@@ -19,10 +30,21 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		if (header.Any(value => value.Name == NatsMessageHeaderValueConsts.SessionAskKey))
+			return await InternalAskAsync(
+				subject,
+				data,
+				header.Where(value => value.Name != NatsMessageHeaderValueConsts.SessionAskKey),
+				cancellationToken).ConfigureAwait(false);
+
+		_logger.LogInformation("Ask");
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
+
+		if (!string.IsNullOrEmpty(_sessionReplySubject))
+			msg.Header.Add(NatsMessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject);
 
 		cancellationToken.ThrowIfCancellationRequested();
 		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
@@ -31,8 +53,21 @@ internal class NatsMessageQueueService
 			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
 				? throw new MessageProcessFailException(reply.Data)
 				: reply.Data;
+		var replySubject = reply.HasHeaders
+			? reply.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
+			: null;
+		var askId = reply.HasHeaders
+			? reply.Header.GetValues(NatsMessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
+			: null;
+		var askGuid = askId != null && Guid.TryParse(askId, out var id)
+			? (Guid?)id
+			: null;
 
-		return new NatsAnswer(responseData, msg.Reply, this);
+		return new NatsAnswer(
+			responseData,
+			this,
+			replySubject,
+			askGuid);
 	}
 
 	public ValueTask PublishAsync(
@@ -102,6 +137,31 @@ internal class NatsMessageQueueService
 		var subscription = _connection.SubscribeAsync(settings.Subject, settings.EventHandler);
 
 		return ValueTask.FromResult<IDisposable>(subscription);
+	}
+
+	internal async ValueTask<Answer> InternalAskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
+	{
+		_logger.LogInformation($"Internal Ask: {subject}");
+		var (id, promise) = _replyPromiseStore.CreatePromise(cancellationToken);
+
+		var appendHeaders = new List<MessageHeaderValue>();
+
+		if (!string.IsNullOrEmpty(_sessionReplySubject))
+			appendHeaders.Add(new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject));
+
+		appendHeaders.Add(new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionAskKey, id.ToString()));
+
+		await PublishAsync(
+			subject,
+			data,
+			header.Concat(appendHeaders),
+			cancellationToken).ConfigureAwait(false);
+
+		return await promise.ConfigureAwait(false);
 	}
 
 	private static MsgHeader MakeMsgHeader(IEnumerable<MessageHeaderValue> header)

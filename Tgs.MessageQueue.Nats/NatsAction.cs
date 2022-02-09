@@ -2,7 +2,9 @@
 
 internal record NatsAction : Question
 {
-	public override bool CanResponse => false;
+	public override bool CanResponse => true;
+
+	public override bool CanAsk => false;
 
 	public NatsAction(ReadOnlyMemory<byte> data)
 	{
@@ -16,5 +18,5 @@ internal record NatsAction : Question
 		=> ValueTask.CompletedTask;
 
 	public override ValueTask FailAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
-		=> throw new NatsReplySubjectNullException();
+		=> ValueTask.CompletedTask;
 }

@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
 				sp => sp.GetRequiredService<NoopMessageQueueService>());
 	}
 
+	[Obsolete("這個註冊方式準備要淘汰")]
 	public static IServiceCollection AddNatsMessageQueue(
 				this IServiceCollection services,
 		Action<NatsMessageQueueConfiguration> configure)
@@ -133,7 +134,11 @@ public static class ServiceCollectionExtensions
 					logger.WriteEvent("UnhandledStatus", args, "Status: ", args?.Status);
 				};
 
-				return ActivatorUtilities.CreateInstance<NatsMessageQueueService>(sp, connectionFactory.CreateConnection(options));
+				return new NatsMessageQueueService(
+					connectionFactory.CreateConnection(options),
+					configuration.SessionReplySubject,
+					sp.GetRequiredService<IReplyPromiseStore>(),
+					 sp.GetRequiredService<ILogger<NatsMessageQueueService>>());
 			})
 			.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
 				sp => sp.GetRequiredService<NatsMessageQueueService>())

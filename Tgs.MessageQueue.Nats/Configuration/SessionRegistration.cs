@@ -40,14 +40,18 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 			}
 		});
 
-	private Question CreateQuestion(MessageDataInfo dataInfo, IMessageSender replySender)
-		=> _isSession
+	private Question CreateQuestion(MessageDataInfo dataInfo, IMessageSender replySender, NatsMessageQueueService natsSernder)
+	{
+		var sessionReplySubjectValues = dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplySubjectKey);
+
+		return _isSession
 			? new NatsQuestion(
 				dataInfo.Args.Message.Data,
-				dataInfo.Args.Message.Reply,
-				replySender)
+				natsSernder,
+				dataInfo.Args.Message.Reply)
 			: new NatsAction(
 				dataInfo.Args.Message.Data);
+	}
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
@@ -61,8 +65,14 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 			using var scope = dataInfo.ServiceProvider.CreateScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageSession>(scope.ServiceProvider);
 			var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
+			var natsSender = scope.ServiceProvider.GetRequiredService<NatsMessageQueueService>();
+			var question = CreateQuestion(dataInfo, replySender, natsSender);
 
-			await ProcessMessageAsync(dataInfo, handler, replySender).ConfigureAwait(false);
+			await ProcessMessageAsync(
+				question,
+				handler,
+				dataInfo.Logger,
+				dataInfo.CancellationToken).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
@@ -72,32 +82,30 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 	}
 
 	private async Task ProcessMessageAsync(
-		MessageDataInfo dataInfo,
+		Question question,
 		TMessageSession handler,
-		IMessageSender replySender)
+		ILogger logger,
+		CancellationToken cancellationToken)
 	{
 		try
 		{
-			var question = CreateQuestion(dataInfo, replySender);
-			dataInfo.Logger.LogInformation($"ReplySubject: {dataInfo.Args.Message.Reply}");
 			await handler
-				.HandleAsync(question, dataInfo.CancellationToken)
+				.HandleAsync(question, cancellationToken)
 				.ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			logger.LogError(ex, $"Handle {Subject} occur error.");
 
 			if (handler is IMessageExceptionProcessor exceptionProcessor)
 				_ = await exceptionProcessor
-					.HandleExceptionAsync(dataInfo.Args.Message.Data, ex, dataInfo.CancellationToken)
+					.HandleExceptionAsync(question.Data, ex, cancellationToken)
 					.ConfigureAwait(false);
-			else if (string.IsNullOrEmpty(dataInfo.Args.Message.Reply))
-				await replySender
-					.PublishFailAsync(
-						dataInfo.Args.Message.Reply,
+			else if (question.CanResponse)
+				await question
+					.FailAsync(
 						Encoding.UTF8.GetBytes(ex.ToString()),
-						dataInfo.CancellationToken)
+						cancellationToken)
 					.ConfigureAwait(false);
 		}
 	}
