@@ -4,8 +4,6 @@ internal record NatsAction : Question
 {
 	public override bool CanResponse => true;
 
-	public override bool CanAsk => false;
-
 	public NatsAction(ReadOnlyMemory<byte> data)
 	{
 		Data = data;

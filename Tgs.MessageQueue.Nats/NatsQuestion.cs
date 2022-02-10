@@ -6,7 +6,6 @@ internal record NatsQuestion : Question
 	private readonly IMessageSender _messageSender;
 
 	public override bool CanResponse => !string.IsNullOrEmpty(_replySubject);
-	public override bool CanAsk => !string.IsNullOrEmpty(_replySubject);
 
 	public NatsQuestion(
 		ReadOnlyMemory<byte> data,
@@ -20,7 +19,7 @@ internal record NatsQuestion : Question
 
 	public override ValueTask<Answer> AskAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
 	{
-		return CanAsk
+		return CanResponse
 			? _messageSender.AskAsync(
 				_replySubject!,
 				data,
