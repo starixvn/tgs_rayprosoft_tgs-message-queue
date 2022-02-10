@@ -40,11 +40,11 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 			}
 		});
 
-	private Question CreateQuestion(MessageDataInfo dataInfo, NatsMessageQueueService natsSernder)
+	private Question CreateQuestion(MessageDataInfo dataInfo, NatsMessageQueueService natsSender)
 		=> _isSession
 			? new NatsQuestion(
 				dataInfo.Args.Message.Data,
-				natsSernder,
+				natsSender,
 				dataInfo.Args.Message.Reply)
 			: new NatsAction(
 				dataInfo.Args.Message.Data);
