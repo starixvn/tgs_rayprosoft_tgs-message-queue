@@ -1,4 +1,6 @@
-﻿using NATS.Client;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
+using NATS.Client;
 
 namespace Tgs.MessageQueue.Nats;
 
@@ -6,51 +8,121 @@ internal class NatsMessageQueueService
 	: IMessageSender, IMessageReceiver<NatsSubscriptionSettings>, IMessageReceiver<NatsQueueScriptionSettings>
 {
 	private readonly IConnection _connection;
+	private readonly ILogger<NatsMessageQueueService> _logger;
+	private readonly IReplyPromiseStore _replyPromiseStore;
+	private readonly string? _sessionReplySubject;
 
-	public NatsMessageQueueService(IConnection connection)
+	public NatsMessageQueueService(
+		IConnection connection,
+		string? sessionReplySubject,
+		IReplyPromiseStore replyPromiseStore,
+		ILogger<NatsMessageQueueService> logger)
 	{
 		_connection = connection ?? throw new ArgumentNullException(nameof(connection));
+		_sessionReplySubject = sessionReplySubject;
+		_replyPromiseStore = replyPromiseStore ?? throw new ArgumentNullException(nameof(replyPromiseStore));
+		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
-		var msg = new Msg(subject, data)
+		if (header.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
+			return await InternalAskAsync(
+				subject,
+				data,
+				header.Where(value => value.Name != MessageHeaderValueConsts.SessionAskKey),
+				cancellationToken).ConfigureAwait(false);
+
+		_logger.LogInformation("Ask");
+		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
 		};
 
+		if (!string.IsNullOrEmpty(_sessionReplySubject))
+			msg.Header.Add(MessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject);
+
+		cancellationToken.ThrowIfCancellationRequested();
+		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
+
+		var responseData = reply.HasHeaders
+			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
+				? throw new MessageProcessFailException(reply.Data)
+				: reply.Data;
+		var replySubject = reply.HasHeaders
+			? reply.Header.GetValues(MessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
+			: null;
+		var askId = reply.HasHeaders
+			? reply.Header.GetValues(MessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
+			: null;
+		var askGuid = askId != null && Guid.TryParse(askId, out var id)
+			? (Guid?)id
+			: null;
+
+		return new NatsAnswer(
+			responseData,
+			this,
+			replySubject,
+			askGuid);
+	}
+
+	public ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
+	{
+		var msg = new Msg(subject, data.ToArray())
+		{
+			Header = MakeMsgHeader(header)
+		};
+
+		cancellationToken.ThrowIfCancellationRequested();
 		_connection.Publish(msg);
 
 		return ValueTask.CompletedTask;
 	}
 
-	public async ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
-		var msg = new Msg(subject, data)
-		{
-			Header = MakeMsgHeader(header)
-		};
+		var answer = await AskAsync(
+			subject,
+			data,
+			header,
+			cancellationToken).ConfigureAwait(false);
 
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
+		if (answer.CanResponse)
+			await answer
+				.FailAsync(Encoding.UTF8.GetBytes("Send can't complete."), cancellationToken)
+				.ConfigureAwait(false);
 
-		return reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0
-			? throw new MessageProcessFailException(reply.Data)
-			: reply.Data;
+		return answer.Result;
 	}
 
-	public async ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header)
+	public async ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
 	{
-		var msg = new Msg(subject, data)
-		{
-			Header = NatsMessageQueueService.MakeMsgHeader(header)
-		};
+		var answer = await AskAsync(
+			subject,
+			data,
+			header,
+			cancellationToken).ConfigureAwait(false);
 
-		var reply = await _connection.RequestAsync(msg).ConfigureAwait(false);
-
-		if (reply.HasHeaders
-			&& reply.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0)
-			throw new MessageProcessFailException(reply.Data);
+		if (answer.CanResponse)
+			await answer
+				.FailAsync(Encoding.UTF8.GetBytes("Send can't complete."), cancellationToken)
+				.ConfigureAwait(false);
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(NatsQueueScriptionSettings settings)
@@ -65,6 +137,31 @@ internal class NatsMessageQueueService
 		var subscription = _connection.SubscribeAsync(settings.Subject, settings.EventHandler);
 
 		return ValueTask.FromResult<IDisposable>(subscription);
+	}
+
+	internal async ValueTask<Answer> InternalAskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken)
+	{
+		_logger.LogInformation($"Internal Ask: {subject}");
+		var (id, promise) = _replyPromiseStore.CreatePromise(cancellationToken);
+
+		var appendHeaders = new List<MessageHeaderValue>();
+
+		if (!string.IsNullOrEmpty(_sessionReplySubject))
+			appendHeaders.Add(new MessageHeaderValue(MessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject));
+
+		appendHeaders.Add(new MessageHeaderValue(MessageHeaderValueConsts.SessionAskKey, id.ToString()));
+
+		await PublishAsync(
+			subject,
+			data,
+			header.Concat(appendHeaders),
+			cancellationToken).ConfigureAwait(false);
+
+		return await promise.ConfigureAwait(false);
 	}
 
 	private static MsgHeader MakeMsgHeader(IEnumerable<MessageHeaderValue> header)

@@ -9,8 +9,10 @@ public static class ServiceCollectionExtensions
 	{
 		var configuration = new MessageQueueConfiguration(services);
 
-		_ = services.AddTransient<IMessageSender>(
-			sp => new MultiplexerMessageSender(sp, configuration.GetRegisterExchanges()));
+		_ = services
+			.AddSingleton<IReplyPromiseStore, ReplyPromiseStore>()
+			.AddTransient<IMessageSender>(
+				sp => new MultiplexerMessageSender(sp, configuration.GetRegisterExchanges()));
 
 		return configuration;
 	}

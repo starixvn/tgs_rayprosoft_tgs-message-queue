@@ -4,3 +4,6 @@
 [*.cs]
 
 dotnet_diagnostic.CA2012.severity = silent
+
+# VSTHRD003: Avoid awaiting foreign Tasks
+dotnet_diagnostic.VSTHRD003.severity = none

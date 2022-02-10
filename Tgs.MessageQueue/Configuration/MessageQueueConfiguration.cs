@@ -8,6 +8,8 @@ public class MessageQueueConfiguration
 
 	public IServiceCollection Services { get; }
 
+	public string? SessionReplySubject { get; private set; }
+
 	public MessageQueueConfiguration(IServiceCollection services)
 	{
 		Services = services ?? throw new ArgumentNullException(nameof(services));
@@ -23,6 +25,15 @@ public class MessageQueueConfiguration
 	public MessageQueueConfiguration ClearAllExchanges()
 	{
 		_messageExchanges.Clear();
+
+		return this;
+	}
+
+	public MessageQueueConfiguration RegisterSessionReplySubject(string subject)
+	{
+		if (string.IsNullOrWhiteSpace(subject))
+			throw new ArgumentException($"'{nameof(subject)}' 不得為 Null 或空白字元。", nameof(subject));
+		SessionReplySubject = subject;
 
 		return this;
 	}

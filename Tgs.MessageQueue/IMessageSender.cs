@@ -2,9 +2,27 @@
 
 public interface IMessageSender
 {
-	ValueTask PublishAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+	ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default);
 
-	ValueTask<byte[]> RequestAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+	ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default);
 
-	ValueTask SendAsync(string subject, byte[] data, IEnumerable<MessageHeaderValue> header);
+	ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default);
+
+	ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default);
 }

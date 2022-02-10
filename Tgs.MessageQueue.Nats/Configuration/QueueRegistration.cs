@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.Nats.Configuration;
 
 internal class QueueRegistration<THandler> : ISubscribeRegistration
 	where THandler : IMessageHandler
 {
+	private readonly QueueSessionRegistration<InternalHandlerSession<THandler>> _queueSessionRegistration;
+
 	public string Queue { get; }
 
 	public string Subject { get; }
@@ -18,6 +19,8 @@ internal class QueueRegistration<THandler> : ISubscribeRegistration
 			throw new ArgumentException($"'{nameof(queue)}' is not Null or Empty.", nameof(queue));
 		Subject = subject;
 		Queue = queue;
+
+		_queueSessionRegistration = new QueueSessionRegistration<InternalHandlerSession<THandler>>(Subject, Queue, false);
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(
@@ -26,42 +29,10 @@ internal class QueueRegistration<THandler> : ISubscribeRegistration
 		IServiceProvider serviceProvider,
 		ILogger logger,
 		CancellationToken cancellationToken)
-		=> queueReceiver.SubscribeAsync(new NatsQueueScriptionSettings
-		{
-			Subject = Subject,
-			Queue = Queue,
-			EventHandler = (sender, args) =>
-			{
-				_ = HandleMessageAsync(new MessageDataInfo
-				{
-					Args = args,
-					ServiceProvider = serviceProvider,
-					Logger = logger,
-					CancellationToken = cancellationToken
-				});
-			}
-		});
-
-	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
-	{
-		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
-
-		_ = (activity?.AddTag("mq", "NATS")
-			.AddTag("handler", typeof(THandler).Name));
-
-		try
-		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
-			var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
-
-			await handler
-				.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
-				.ConfigureAwait(false);
-		}
-		catch (Exception ex)
-		{
-			_ = (activity?.AddTag("error", true));
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
-		}
-	}
+		=> _queueSessionRegistration.SubscribeAsync(
+			messageReceiver,
+			queueReceiver,
+			serviceProvider,
+			logger,
+			cancellationToken);
 }

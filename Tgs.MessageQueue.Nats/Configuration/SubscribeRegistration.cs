@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.Nats.Configuration;
 
 internal class SubscribeRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 {
+	private readonly SessionRegistration<InternalHandlerSession<THandler>> _sessionRegistration;
+
 	public string Subject { get; }
 
 	public SubscribeRegistration(string subject)
@@ -12,6 +13,8 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 		if (string.IsNullOrEmpty(subject))
 			throw new ArgumentException($"'{nameof(subject)}' is not Null or Empty.", nameof(subject));
 		Subject = subject;
+
+		_sessionRegistration = new SessionRegistration<InternalHandlerSession<THandler>>(subject, false);
 	}
 
 	public ValueTask<IDisposable> SubscribeAsync(
@@ -20,41 +23,10 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 		IServiceProvider serviceProvider,
 		ILogger logger,
 		CancellationToken cancellationToken)
-		=> messageReceiver.SubscribeAsync(new NatsSubscriptionSettings
-		{
-			Subject = Subject,
-			EventHandler = (sender, args) =>
-			{
-				_ = HandleMessageAsync(new MessageDataInfo
-				{
-					Args = args,
-					ServiceProvider = serviceProvider,
-					Logger = logger,
-					CancellationToken = cancellationToken
-				});
-			}
-		});
-
-	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
-	{
-		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
-
-		_ = (activity?.AddTag("mq", "NATS")
-			.AddTag("handler", typeof(THandler).Name));
-
-		try
-		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
-			var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
-
-			await handler
-				.HandleAsync(dataInfo.Args.Message.Data, dataInfo.CancellationToken)
-				.ConfigureAwait(false);
-		}
-		catch (Exception ex)
-		{
-			_ = (activity?.AddTag("error", true));
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
-		}
-	}
+		=> _sessionRegistration.SubscribeAsync(
+			messageReceiver,
+			queueReceiver,
+			serviceProvider,
+			logger,
+			cancellationToken);
 }

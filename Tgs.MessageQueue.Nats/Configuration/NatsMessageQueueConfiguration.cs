@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
-using Tgs.MessageQueue.Exchanges;
 
 namespace Tgs.MessageQueue.Nats.Configuration;
 
@@ -10,19 +9,17 @@ public class NatsMessageQueueConfiguration
 	internal static ActivitySource _NatsActivitySource = new("Tgs.MessageQueue.Nats");
 
 	private readonly MessageQueueConfiguration _coreConfiguration;
-	private readonly AlwaysMatchMessageExchange<NatsMessageQueueService> _processAllExchange;
 	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
 
 	public IServiceCollection Services { get; }
+
+	internal string? SessionReplySubject => _coreConfiguration.SessionReplySubject;
 
 	public NatsMessageQueueConfiguration(IServiceCollection services)
 	{
 		Services = services ?? throw new ArgumentNullException(nameof(services));
 
 		_coreConfiguration = services.AddMessageQueue();
-		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
-
-		_ = _coreConfiguration.AddExchange(_processAllExchange);
 
 		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 	}
@@ -32,9 +29,6 @@ public class NatsMessageQueueConfiguration
 		Services = coreConfiguration.Services;
 
 		_coreConfiguration = coreConfiguration;
-		_processAllExchange = new AlwaysMatchMessageExchange<NatsMessageQueueService>();
-
-		_ = _coreConfiguration.AddExchange(_processAllExchange);
 
 		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 	}
@@ -81,11 +75,36 @@ public class NatsMessageQueueConfiguration
 		return this;
 	}
 
+	public NatsMessageQueueConfiguration AddSession<TSession>(string subject) where TSession : IMessageSession
+	{
+		_subscribeRegistrations.Add(new SessionRegistration<TSession>(subject));
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration AddSession<TSession>(string subject, string group) where TSession : IMessageSession
+	{
+		_subscribeRegistrations.Add(new QueueSessionRegistration<TSession>(subject, group));
+
+		return this;
+	}
+
 	public NatsMessageQueueConfiguration ConfigQueueOptions(Action<NatsOptions, IServiceProvider> configure)
 	{
 		_ = Services
 			.AddOptions<NatsOptions>()
 			.Configure(configure);
+
+		return this;
+	}
+
+	public NatsMessageQueueConfiguration SetSessionReplySubject(string subject)
+	{
+		if (string.IsNullOrWhiteSpace(subject))
+			throw new ArgumentException($"'{nameof(subject)}' 不得為 Null 或空白字元。", nameof(subject));
+
+		_subscribeRegistrations.Add(new SessionReplyRegistration(subject));
+		_ = _coreConfiguration.RegisterSessionReplySubject(subject);
 
 		return this;
 	}

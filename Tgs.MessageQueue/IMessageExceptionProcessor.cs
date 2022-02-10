@@ -2,5 +2,5 @@
 
 public interface IMessageExceptionProcessor
 {
-	ValueTask<byte[]> HandleExceptionAsync(byte[] data, Exception exception, CancellationToken cancellationToken = default);
+	ValueTask<ReadOnlyMemory<byte>> HandleExceptionAsync(ReadOnlyMemory<byte> data, Exception exception, CancellationToken cancellationToken = default);
 }

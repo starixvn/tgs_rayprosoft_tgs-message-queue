@@ -2,5 +2,5 @@
 
 public interface IMessageHandler
 {
-	ValueTask HandleAsync(byte[] data, CancellationToken cancellationToken = default);
+	ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default);
 }
