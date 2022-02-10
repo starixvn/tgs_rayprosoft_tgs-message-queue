@@ -30,11 +30,11 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
-		if (header.Any(value => value.Name == NatsMessageHeaderValueConsts.SessionAskKey))
+		if (header.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
 			return await InternalAskAsync(
 				subject,
 				data,
-				header.Where(value => value.Name != NatsMessageHeaderValueConsts.SessionAskKey),
+				header.Where(value => value.Name != MessageHeaderValueConsts.SessionAskKey),
 				cancellationToken).ConfigureAwait(false);
 
 		_logger.LogInformation("Ask");
@@ -44,7 +44,7 @@ internal class NatsMessageQueueService
 		};
 
 		if (!string.IsNullOrEmpty(_sessionReplySubject))
-			msg.Header.Add(NatsMessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject);
+			msg.Header.Add(MessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject);
 
 		cancellationToken.ThrowIfCancellationRequested();
 		var reply = await _connection.RequestAsync(msg, cancellationToken).ConfigureAwait(false);
@@ -54,10 +54,10 @@ internal class NatsMessageQueueService
 				? throw new MessageProcessFailException(reply.Data)
 				: reply.Data;
 		var replySubject = reply.HasHeaders
-			? reply.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
+			? reply.Header.GetValues(MessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
 			: null;
 		var askId = reply.HasHeaders
-			? reply.Header.GetValues(NatsMessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
+			? reply.Header.GetValues(MessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
 			: null;
 		var askGuid = askId != null && Guid.TryParse(askId, out var id)
 			? (Guid?)id
@@ -151,9 +151,9 @@ internal class NatsMessageQueueService
 		var appendHeaders = new List<MessageHeaderValue>();
 
 		if (!string.IsNullOrEmpty(_sessionReplySubject))
-			appendHeaders.Add(new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject));
+			appendHeaders.Add(new MessageHeaderValue(MessageHeaderValueConsts.SessionReplySubjectKey, _sessionReplySubject));
 
-		appendHeaders.Add(new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionAskKey, id.ToString()));
+		appendHeaders.Add(new MessageHeaderValue(MessageHeaderValueConsts.SessionAskKey, id.ToString()));
 
 		await PublishAsync(
 			subject,

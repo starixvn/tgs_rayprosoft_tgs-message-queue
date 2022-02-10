@@ -27,8 +27,8 @@ internal record NatsAnswer : Answer
 				_replySubject!,
 				data,
 				header.Concat(new[] {
-					new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionReplyKey, _replyId.ToString()),
-					new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionAskKey, string.Empty) }),
+					new MessageHeaderValue(MessageHeaderValueConsts.SessionReplyKey, _replyId.ToString()),
+					new MessageHeaderValue(MessageHeaderValueConsts.SessionAskKey, string.Empty) }),
 				cancellationToken)
 			: throw new NatsReplySubjectNullException();
 
@@ -38,7 +38,7 @@ internal record NatsAnswer : Answer
 				_replySubject!,
 				data,
 				header.Concat(new[] {
-					new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionReplyKey, _replyId.ToString())}),
+					new MessageHeaderValue(MessageHeaderValueConsts.SessionReplyKey, _replyId.ToString())}),
 				cancellationToken)
 			: throw new NatsReplySubjectNullException();
 
@@ -48,7 +48,7 @@ internal record NatsAnswer : Answer
 				_replySubject!,
 				data,
 				header.Concat(new[] {
-					new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionReplyKey, _replyId.ToString())}),
+					new MessageHeaderValue(MessageHeaderValueConsts.SessionReplyKey, _replyId.ToString())}),
 				cancellationToken: cancellationToken)
 			: throw new NatsReplySubjectNullException();
 }

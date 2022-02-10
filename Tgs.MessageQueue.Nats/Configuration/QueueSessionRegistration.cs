@@ -46,18 +46,14 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 			}
 		});
 
-	private Question CreateQuestion(MessageDataInfo dataInfo, IMessageSender replySender, NatsMessageQueueService natsSernder)
-	{
-		var sessionReplySubjectValues = dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplySubjectKey);
-
-		return _isSession
+	private Question CreateQuestion(MessageDataInfo dataInfo, NatsMessageQueueService natsSernder)
+		=> _isSession
 			? new NatsQuestion(
 				dataInfo.Args.Message.Data,
 				natsSernder,
 				dataInfo.Args.Message.Reply)
 			: new NatsAction(
 				dataInfo.Args.Message.Data);
-	}
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
@@ -70,9 +66,8 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 		{
 			using var scope = dataInfo.ServiceProvider.CreateScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageSession>(scope.ServiceProvider);
-			var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
 			var natsSender = scope.ServiceProvider.GetRequiredService<NatsMessageQueueService>();
-			var question = CreateQuestion(dataInfo, replySender, natsSender);
+			var question = CreateQuestion(dataInfo, natsSender);
 
 			await ProcessMessageAsync(
 				question,

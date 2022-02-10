@@ -24,7 +24,7 @@ internal record NatsQuestion : Question
 			? _messageSender.AskAsync(
 				_replySubject!,
 				data,
-				header.Concat(new[] { new MessageHeaderValue(NatsMessageHeaderValueConsts.SessionAskKey, string.Empty) }),
+				header.Concat(new[] { new MessageHeaderValue(MessageHeaderValueConsts.SessionAskKey, string.Empty) }),
 				cancellationToken)
 			: throw new NatsReplySubjectNullException();
 	}

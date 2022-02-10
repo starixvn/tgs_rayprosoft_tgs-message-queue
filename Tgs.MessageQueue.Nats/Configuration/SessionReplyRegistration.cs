@@ -47,7 +47,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 			var store = scope.ServiceProvider.GetRequiredService<IReplyPromiseStore>();
 			var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
 			var replyId = dataInfo.Args.Message.HasHeaders
-				? dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplyKey)?.FirstOrDefault()
+				? dataInfo.Args.Message.Header.GetValues(MessageHeaderValueConsts.SessionReplyKey)?.FirstOrDefault()
 				: null;
 
 			dataInfo.Logger.LogInformation($"ReplyId: {replyId}");
@@ -58,10 +58,10 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 					&& dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.FailMessageHeaderValue.Name)?.Length > 0;
 				var responseData = dataInfo.Args.Message.Data;
 				var replySubject = dataInfo.Args.Message.HasHeaders
-					? dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
+					? dataInfo.Args.Message.Header.GetValues(MessageHeaderValueConsts.SessionReplySubjectKey)?.FirstOrDefault()
 					: null;
 				var askId = dataInfo.Args.Message.HasHeaders
-					? dataInfo.Args.Message.Header.GetValues(NatsMessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
+					? dataInfo.Args.Message.Header.GetValues(MessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
 					: null;
 
 				dataInfo.Logger.LogInformation($"AskId: {askId}");
