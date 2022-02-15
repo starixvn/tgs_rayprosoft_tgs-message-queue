@@ -31,10 +31,10 @@ internal class MongoDbMessageQueueService : IMessageSender
 		var message = await _mongoMessageQueue.Publish(
 			m => m
 				.Queue(_queueName)
-				.Data(new
+				.Data(new MongoMessage
 				{
 					Subject = subject,
-					Data = data
+					Data = data.ToArray()
 				})
 				.Correlation(Guid.NewGuid().ToString()));
 	}
