@@ -93,6 +93,7 @@ public static class ServiceCollectionExtensions
 				var options = ConnectionFactory.GetDefaultOptions();
 
 				options.Url = queueOptions.Url;
+				options.MaxReconnect = queueOptions.MaxReconnect ?? 1000;
 				options.AsyncErrorEventHandler = (sender, args) =>
 				{
 					logger.WriteError("AsyncErrorEvent", args);
