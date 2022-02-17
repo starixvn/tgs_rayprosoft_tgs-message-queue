@@ -13,16 +13,27 @@ public class MongoDBMessageQueueConfiguration
 		Services = messageQueueConfiguration.Services;
 	}
 
+	[Obsolete("這個方法將廢棄")]
 	public MongoDBMessageQueueBuilder DefineMessageQueue(
 		string name,
 		Func<IServiceProvider, MongoDBMessageQueue> messageQueueFactory,
 		Func<IServiceProvider, string> connectionStringFactory)
+		=> DefineMessageQueue(
+			name,
+			sp => new MongoMessageQueueBuilderOptions
+			{
+				MessageQueue = messageQueueFactory(sp),
+				ConnectionString = connectionStringFactory(sp)
+			});
+
+	public MongoDBMessageQueueBuilder DefineMessageQueue(
+		string name,
+		Func<IServiceProvider, MongoMessageQueueBuilderOptions> messageQueueFactory)
 	{
 		var builder = new MongoDBMessageQueueBuilder(
 			Services,
 			name,
-			messageQueueFactory,
-			connectionStringFactory);
+			messageQueueFactory);
 
 		_ = Services.AddSingleton(builder);
 
