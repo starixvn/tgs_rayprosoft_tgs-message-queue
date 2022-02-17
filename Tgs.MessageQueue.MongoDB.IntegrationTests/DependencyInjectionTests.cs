@@ -24,8 +24,11 @@ public class DependencyInjectionTests
 			.AddMongoMessageQueue(configuration => configuration
 				.DefineMessageQueue(
 					"test",
-					sp => MongoMessageQueue.Default,
-					sp => "mongodb://localhost/Messaging")
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					})
 				.DeclareQueue("queue")
 				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
@@ -47,8 +50,11 @@ public class DependencyInjectionTests
 			.AddMongoMessageQueue(configuration => configuration
 				.DefineMessageQueue(
 					"test",
-					sp => MongoMessageQueue.Default,
-					sp => "mongodb://localhost/Messaging")
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					})
 				.DeclareQueue("queue")
 				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
@@ -76,8 +82,11 @@ public class DependencyInjectionTests
 			.AddMongoMessageQueue(configuration => configuration
 				.DefineMessageQueue(
 					"test",
-					sp => MongoMessageQueue.Default,
-					sp => "mongodb://localhost/Messaging")
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					})
 				.DeclareQueue("queue")
 				.AddHandler<StubMessageHandler>("test", TimeSpan.FromSeconds(1)));
 
@@ -114,13 +123,19 @@ public class DependencyInjectionTests
 			{
 				_ = configuration.DefineMessageQueue(
 					"test1",
-					sp => MongoMessageQueue.Default,
-					sp => "mongodb://localhost/Messaging");
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					});
 
 				_ = configuration.DefineMessageQueue(
 					"test2",
-					sp => MongoMessageQueue.Default,
-					sp => "mongodb://localhost/Messaging");
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					});
 			});
 
 		var sut = services.BuildServiceProvider();
@@ -145,8 +160,11 @@ public class DependencyInjectionTests
 			.AddMongoMessageQueue(configuration => configuration
 				.DefineMessageQueue(
 					"test",
-					sp => mongoMessageQueue,
-					sp => "mongodb://localhost/Messaging")
+					sp => new MongoMessageQueueBuilderOptions
+					{
+						MessageQueue = MongoMessageQueue.Default,
+						ConnectionString = "mongodb://localhost/Messaging"
+					})
 				.DeclareQueue("queue"))
 			.AddMongoGlobPatternExchange("*", "test", "queue");
 
@@ -177,15 +195,21 @@ public class DependencyInjectionTests
 				_ = configuration
 					.DefineMessageQueue(
 						"test1",
-						sp => mongoMessageQueue,
-						sp => "mongodb://localhost/Messaging")
+						sp => new MongoMessageQueueBuilderOptions
+						{
+							MessageQueue = MongoMessageQueue.Default,
+							ConnectionString = "mongodb://localhost/Messaging"
+						})
 					.DeclareQueue("queue1");
 
 				_ = configuration
 					.DefineMessageQueue(
 						"test2",
-						sp => mongoMessageQueue,
-						sp => "mongodb://localhost/Messaging")
+						sp => new MongoMessageQueueBuilderOptions
+						{
+							MessageQueue = MongoMessageQueue.Default,
+							ConnectionString = "mongodb://localhost/Messaging"
+						})
 					.DeclareQueue("queue2");
 			})
 			.AddMongoGlobPatternExchange("subject.test1", "test1", "queue1")

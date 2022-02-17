@@ -74,10 +74,7 @@ internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitS
 		var connection = factory.CreateConnection();
 		var channel = connection.CreateModel();
 		var consumer = new AsyncEventingBasicConsumer(channel);
-		consumer.Received += (sender, args) =>
-		{
-			return settings.EventHandler(channel, args);
-		};
+		consumer.Received += (sender, args) => settings.EventHandler(channel, args);
 
 		var consumerTag = channel.BasicConsume(
 			queue: settings.Subject,
