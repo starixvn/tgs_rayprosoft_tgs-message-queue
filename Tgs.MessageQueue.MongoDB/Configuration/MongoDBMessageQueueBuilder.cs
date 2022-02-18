@@ -76,7 +76,7 @@ public class MongoDBMessageQueueBuilder
 							{
 								using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(registration.QueueName);
 
-								_ = (activity?.AddTag("mq", "NATS")
+								_ = (activity?.AddTag("mq", "Mongo")
 									.AddTag("handler", registration.HandlerType.Name));
 
 								var subscriberType = typeof(MessageSubscriber<>);
