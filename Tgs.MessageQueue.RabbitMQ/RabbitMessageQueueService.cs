@@ -26,6 +26,8 @@ internal class RabbitMessageQueueService : IMessageSender
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity("RabbitMQ Publish");
+
 		var properties = BuildBasicProperties(header);
 
 		cancellationToken.ThrowIfCancellationRequested();

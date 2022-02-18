@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
 using Tgs.MessageQueue.RabbitMQ.Exchanges;
 
@@ -6,6 +7,8 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration;
 
 public class RabbitMessageQueueConfiguration
 {
+	internal static ActivitySource _RabbitActivitySource = new("Tgs.MessageQueue.RabbitMQ");
+
 	private readonly MessageQueueConfiguration _coreConfiguration;
 
 	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
