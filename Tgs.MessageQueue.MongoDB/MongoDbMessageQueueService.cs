@@ -1,4 +1,5 @@
-﻿using MongoMessageQueue = MongoDB.Messaging.MessageQueue;
+﻿using Tgs.MessageQueue.MongoDB.Configuration;
+using MongoMessageQueue = MongoDB.Messaging.MessageQueue;
 
 namespace Tgs.MessageQueue.MongoDB;
 
@@ -26,6 +27,8 @@ internal class MongoDbMessageQueueService : IMessageSender
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity("Mongo Publish");
+
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var message = await _mongoMessageQueue.Publish(

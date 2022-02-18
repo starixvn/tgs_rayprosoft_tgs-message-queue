@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Logging;
 using NATS.Client;
+using Tgs.MessageQueue.Nats.Configuration;
 
 namespace Tgs.MessageQueue.Nats;
 
@@ -30,6 +31,8 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Ask");
+
 		if (header.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
 			return await InternalAskAsync(
 				subject,
@@ -76,6 +79,8 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Publish");
+
 		var msg = new Msg(subject, data.ToArray())
 		{
 			Header = MakeMsgHeader(header)
@@ -93,6 +98,8 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Request");
+
 		var answer = await AskAsync(
 			subject,
 			data,
@@ -113,6 +120,8 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Send");
+
 		var answer = await AskAsync(
 			subject,
 			data,
@@ -145,6 +154,8 @@ internal class NatsMessageQueueService
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken)
 	{
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Internal Ask");
+
 		_logger.LogInformation($"Internal Ask: {subject}");
 		var (id, promise) = _replyPromiseStore.CreatePromise(cancellationToken);
 
