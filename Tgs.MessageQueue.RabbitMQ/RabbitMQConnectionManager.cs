@@ -68,7 +68,7 @@ internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitS
 			Password = _options.Password,
 			VirtualHost = _options.VirtualHost,
 			DispatchConsumersAsync = true,
-			ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency,
+			ConsumerDispatchConcurrency = settings.ConsumerDispatchConcurrency
 		};
 
 		var connection = factory.CreateConnection();
@@ -96,6 +96,8 @@ internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitS
 		{
 			if (disposing)
 			{
+				_logger.LogWarning($"{nameof(RabbitMQConnectionManager)} disposing.");
+
 				MessageQueueChannel?.Close();
 				MessageQueueChannel?.Dispose();
 

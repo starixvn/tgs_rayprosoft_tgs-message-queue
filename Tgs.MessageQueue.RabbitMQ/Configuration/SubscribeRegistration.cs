@@ -5,6 +5,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration;
 
 internal class SubscribeRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 {
+	private static Random _Random = new Random();
 	private readonly bool _autoAck;
 	private readonly int _dispatchConcurrency;
 
@@ -67,6 +68,13 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 		{
 			_ = (activity?.AddTag("error", true));
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+
+			if (!_autoAck)
+			{
+				await Task.Delay(_Random.Next(1, 5) * 1000).ConfigureAwait(false);
+
+				dataInfo.Channel.BasicNack(dataInfo.Args.DeliveryTag, false, true);
+			}
 		}
 	}
 }
