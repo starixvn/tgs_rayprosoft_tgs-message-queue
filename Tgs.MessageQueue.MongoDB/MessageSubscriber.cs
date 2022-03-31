@@ -3,14 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Messaging;
 using MongoDB.Messaging.Subscription;
+using Tgs.MessageQueue.MongoDB.Configuration;
 
 namespace Tgs.MessageQueue.MongoDB;
 
 internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposable
 	where TReceiver : class, IMessageHandler
 {
-	private static readonly ActivitySource _MongoDBActivitySource = new("Tgs.MessageQueue.MongoDB");
-
 	private readonly ILogger<MessageSubscriber<TReceiver>> _logger;
 	private readonly IServiceProvider _serviceProvider;
 	private bool _disposedValue;
@@ -39,7 +38,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 
 	public MessageResult Process(ProcessContext processContext)
 	{
-		using var activity = _MongoDBActivitySource.StartActivity(processContext.Container.Name);
+		using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(processContext.Container.Name);
 
 		_ = (activity?.AddTag("mq", "MongoDB")
 			.AddTag("handler", typeof(TReceiver).Name));
