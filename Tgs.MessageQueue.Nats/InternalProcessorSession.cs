@@ -15,7 +15,7 @@ internal class InternalProcessorSession<TProcessor> : IMessageSession
 
 	public async ValueTask HandleAsync(Question question, CancellationToken cancellationToken = default)
 	{
-		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"InternalHandlerSession");
+		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity("InternalHandlerSession");
 
 		_ = (activity?.AddTag("mq", "NATS")
 			.AddTag("handler", typeof(TProcessor).Name));

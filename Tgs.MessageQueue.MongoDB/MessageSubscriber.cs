@@ -46,6 +46,23 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 
 		var payload = processContext.Data<MongoMessage>();
 
+		if (activity is not null
+			&& payload is not null
+			&& !string.IsNullOrEmpty(payload.TraceParent)
+			&& TraceContextPropagator.TryExtract(
+				payload,
+				(p, key) => key switch
+				{
+					TraceContextPropagator.TraceParent => p.TraceParent!,
+					TraceContextPropagator.TraceState => p.TraceState!,
+					_ => string.Empty
+				},
+				out var context))
+		{
+			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			activity.TraceStateString = context.TraceState;
+		}
+
 		using var scope = _serviceProvider.CreateScope();
 
 		try
@@ -53,7 +70,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 			var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-			Task.Run(async () => await receiver.HandleAsync(payload.Data).ConfigureAwait(false)).Wait();
+			Task.Run(async () => await receiver.HandleAsync(payload!.Data).ConfigureAwait(false)).Wait();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
 			return MessageResult.Successful;

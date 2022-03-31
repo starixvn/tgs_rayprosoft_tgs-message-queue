@@ -31,14 +31,33 @@ internal class MongoDbMessageQueueService : IMessageSender
 
 		cancellationToken.ThrowIfCancellationRequested();
 
+		var mongoMsg = new MongoMessage
+		{
+			Subject = subject,
+			Data = data.ToArray()
+		};
+
+		TraceContextPropagator.Inject(
+			activity,
+			mongoMsg,
+			(msg, key, value) =>
+			{
+				switch (key)
+				{
+					case TraceContextPropagator.TraceParent:
+						msg.TraceParent = value;
+						break;
+
+					case TraceContextPropagator.TraceState:
+						msg.TraceState = value;
+						break;
+				}
+			});
+
 		var message = await _mongoMessageQueue.Publish(
 			m => m
 				.Queue(_queueName)
-				.Data(new MongoMessage
-				{
-					Subject = subject,
-					Data = data.ToArray()
-				})
+				.Data(mongoMsg)
 				.Correlation(Guid.NewGuid().ToString()));
 	}
 

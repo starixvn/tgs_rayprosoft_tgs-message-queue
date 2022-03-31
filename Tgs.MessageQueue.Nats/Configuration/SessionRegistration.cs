@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -53,6 +52,17 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
 		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
+
+		if (dataInfo.Args.Message.HasHeaders
+			&& activity is not null
+			&& TraceContextPropagator.TryExtract(
+				dataInfo.Args.Message.Header,
+				(header, key) => header[key],
+				out var context))
+		{
+			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			activity.TraceStateString = context.TraceState;
+		}
 
 		_ = (activity?.AddTag("mq", "NATS")
 			.AddTag("handler", typeof(TMessageSession).Name));

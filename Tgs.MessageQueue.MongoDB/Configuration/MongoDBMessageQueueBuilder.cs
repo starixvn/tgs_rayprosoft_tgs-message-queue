@@ -74,11 +74,6 @@ public class MongoDBMessageQueueBuilder
 							.Queue(registration.QueueName)
 							.Handler(() =>
 							{
-								using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(registration.QueueName);
-
-								_ = (activity?.AddTag("mq", "Mongo")
-									.AddTag("handler", registration.HandlerType.Name));
-
 								var subscriberType = typeof(MessageSubscriber<>);
 
 								var handlerType = subscriberType.MakeGenericType(registration.HandlerType);
