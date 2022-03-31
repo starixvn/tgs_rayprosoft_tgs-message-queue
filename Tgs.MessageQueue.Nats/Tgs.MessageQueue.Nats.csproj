@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net5.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
-		<Version>2.0.3</Version>
+		<Version>2.1.0</Version>
 		<Authors>Raypro</Authors>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
@@ -16,16 +16,16 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[5.0.0, 6.0)" Condition="'$(TargetFramework)' == 'net5.0'" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, 6.0)" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, 6.0)" Condition="'$(TargetFramework)' == 'net5.0'" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.64">
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.1.46">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="NATS.Client" Version="0.14.3" />
+		<PackageReference Include="NATS.Client" Version="0.14.5" />
 	</ItemGroup>
 
 	<ItemGroup>

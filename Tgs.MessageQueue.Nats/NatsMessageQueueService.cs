@@ -33,17 +33,24 @@ internal class NatsMessageQueueService
 	{
 		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Ask");
 
-		if (header.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+
+		if (appendHeaders.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
 			return await InternalAskAsync(
 				subject,
 				data,
-				header.Where(value => value.Name != MessageHeaderValueConsts.SessionAskKey),
+				appendHeaders.Where(value => value.Name != MessageHeaderValueConsts.SessionAskKey),
 				cancellationToken).ConfigureAwait(false);
 
-		_logger.LogInformation("Ask");
+		_logger.LogDebug("Ask");
 		var msg = new Msg(subject, data.ToArray())
 		{
-			Header = MakeMsgHeader(header)
+			Header = MakeMsgHeader(appendHeaders)
 		};
 
 		if (!string.IsNullOrEmpty(_sessionReplySubject))
@@ -81,9 +88,16 @@ internal class NatsMessageQueueService
 	{
 		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Publish");
 
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+
 		var msg = new Msg(subject, data.ToArray())
 		{
-			Header = MakeMsgHeader(header)
+			Header = MakeMsgHeader(appendHeaders)
 		};
 
 		cancellationToken.ThrowIfCancellationRequested();

@@ -3,14 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Messaging;
 using MongoDB.Messaging.Subscription;
+using Tgs.MessageQueue.MongoDB.Configuration;
 
 namespace Tgs.MessageQueue.MongoDB;
 
 internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposable
 	where TReceiver : class, IMessageHandler
 {
-	private static readonly ActivitySource _MongoDBActivitySource = new("Tgs.MessageQueue.MongoDB");
-
 	private readonly ILogger<MessageSubscriber<TReceiver>> _logger;
 	private readonly IServiceProvider _serviceProvider;
 	private bool _disposedValue;
@@ -39,12 +38,29 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 
 	public MessageResult Process(ProcessContext processContext)
 	{
-		using var activity = _MongoDBActivitySource.StartActivity(processContext.Container.Name);
+		using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(processContext.Container.Name);
 
 		_ = (activity?.AddTag("mq", "MongoDB")
 			.AddTag("handler", typeof(TReceiver).Name));
 
 		var payload = processContext.Data<MongoMessage>();
+
+		if (activity is not null
+			&& payload is not null
+			&& !string.IsNullOrEmpty(payload.TraceParent)
+			&& TraceContextPropagator.TryExtract(
+				payload,
+				(p, key) => key switch
+				{
+					TraceContextPropagator.TraceParent => p.TraceParent!,
+					TraceContextPropagator.TraceState => p.TraceState!,
+					_ => string.Empty
+				},
+				out var context))
+		{
+			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			activity.TraceStateString = context.TraceState;
+		}
 
 		using var scope = _serviceProvider.CreateScope();
 
@@ -53,7 +69,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 			var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-			Task.Run(async () => await receiver.HandleAsync(payload.Data).ConfigureAwait(false)).Wait();
+			Task.Run(async () => await receiver.HandleAsync(payload!.Data).ConfigureAwait(false)).Wait();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
 			return MessageResult.Successful;

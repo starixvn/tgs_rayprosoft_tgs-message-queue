@@ -28,7 +28,14 @@ internal class RabbitMessageQueueService : IMessageSender
 	{
 		using var activity = RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity("RabbitMQ Publish");
 
-		var properties = BuildBasicProperties(header);
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+
+		var properties = BuildBasicProperties(appendHeaders);
 
 		cancellationToken.ThrowIfCancellationRequested();
 		_channel.BasicPublish(_exchangeName, subject, properties, data);

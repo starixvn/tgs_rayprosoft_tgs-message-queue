@@ -48,6 +48,16 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 	{
 		using var activity = RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity(Subject);
 
+		if (activity is not null
+			&& TraceContextPropagator.TryExtract(
+				dataInfo.Args.BasicProperties.Headers,
+				(headers, key) => (headers[key] as string)!,
+				out var context))
+		{
+			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			activity.TraceStateString = context.TraceState;
+		}
+
 		_ = (activity?.AddTag("mq", "RabbitMQ")
 			.AddTag("handler", typeof(THandler).Name));
 
