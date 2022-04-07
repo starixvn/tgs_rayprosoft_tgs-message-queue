@@ -38,7 +38,11 @@ internal class NatsMessageQueueService
 		TraceContextPropagator.Inject(
 			activity,
 			appendHeaders,
-			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
 
 		if (appendHeaders.Any(value => value.Name == MessageHeaderValueConsts.SessionAskKey))
 			return await InternalAskAsync(
@@ -93,7 +97,11 @@ internal class NatsMessageQueueService
 		TraceContextPropagator.Inject(
 			activity,
 			appendHeaders,
-			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
 
 		var msg = new Msg(subject, data.ToArray())
 		{
