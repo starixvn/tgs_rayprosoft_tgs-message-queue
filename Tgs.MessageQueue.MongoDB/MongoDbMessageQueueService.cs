@@ -42,16 +42,17 @@ internal class MongoDbMessageQueueService : IMessageSender
 			mongoMsg,
 			(msg, key, value) =>
 			{
-				switch (key)
-				{
-					case TraceContextPropagator.TraceParent:
-						msg.TraceParent = value;
-						break;
+				if (!string.IsNullOrEmpty(value))
+					switch (key)
+					{
+						case TraceContextPropagator.TraceParent:
+							msg.TraceParent = value;
+							break;
 
-					case TraceContextPropagator.TraceState:
-						msg.TraceState = value;
-						break;
-				}
+						case TraceContextPropagator.TraceState:
+							msg.TraceState = value;
+							break;
+					}
 			});
 
 		var message = await _mongoMessageQueue.Publish(

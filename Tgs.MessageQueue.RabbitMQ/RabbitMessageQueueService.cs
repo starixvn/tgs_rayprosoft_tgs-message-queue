@@ -33,7 +33,11 @@ internal class RabbitMessageQueueService : IMessageSender
 		TraceContextPropagator.Inject(
 			activity,
 			appendHeaders,
-			(headers, key, value) => headers.Add(new MessageHeaderValue(key, value)));
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
 
 		var properties = BuildBasicProperties(appendHeaders);
 
