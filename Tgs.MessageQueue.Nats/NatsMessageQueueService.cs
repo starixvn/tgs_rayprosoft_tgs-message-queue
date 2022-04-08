@@ -197,15 +197,17 @@ internal class NatsMessageQueueService
 		return await promise.ConfigureAwait(false);
 	}
 
-	private static MsgHeader MakeMsgHeader(IEnumerable<MessageHeaderValue> header)
+	private MsgHeader MakeMsgHeader(IEnumerable<MessageHeaderValue> header)
 	{
 		if (header is null)
 			throw new ArgumentNullException(nameof(header));
 
 		var msgHeader = new MsgHeader();
 		foreach (var headerValue in header)
+		{
 			msgHeader.Add(headerValue.Name, headerValue.Value);
-
+			_logger.LogDebug("Header: {headerValue.Name} = {headerValue.Value}", headerValue.Name, headerValue.Value);
+		}
 		return msgHeader;
 	}
 }
