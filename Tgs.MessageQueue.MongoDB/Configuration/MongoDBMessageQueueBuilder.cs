@@ -29,15 +29,18 @@ public class MongoDBMessageQueueBuilder
 
 	public MongoDBMessageQueueBuilder AddHandler<THandler>(string queueName, TimeSpan pollTime, int workers = 1)
 		where THandler : class, IMessageHandler
+		=> AddHandler(typeof(THandler), queueName, pollTime, workers);
+
+	public MongoDBMessageQueueBuilder AddHandler(Type handlerType, string queueName, TimeSpan pollTime, int workers = 1)
 	{
-		_services.TryAddTransient<THandler>();
+		_services.TryAddTransient(handlerType);
 
 		_subscriptions.Add(new SubscribeRegistration
 		{
 			QueueName = queueName,
 			PollTime = pollTime,
 			Workers = workers,
-			HandlerType = typeof(THandler)
+			HandlerType = handlerType
 		});
 
 		return this;

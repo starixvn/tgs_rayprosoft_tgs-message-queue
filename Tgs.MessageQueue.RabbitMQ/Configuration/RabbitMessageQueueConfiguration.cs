@@ -42,19 +42,37 @@ public class RabbitMessageQueueConfiguration
 		return this;
 	}
 
+	public RabbitMessageQueueConfiguration AddHandler(
+		Type handlerType,
+		string queueName,
+		string exchangeName,
+		string routingKey,
+		bool autoAck = true,
+		int dispatchConcurrency = 1)
+	{
+		var registrationType = typeof(SubscribeRegistration<>).MakeGenericType(handlerType);
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(
+			registrationType,
+			queueName,
+			exchangeName,
+			routingKey,
+			autoAck,
+			dispatchConcurrency);
+
+		if (registration == null)
+			throw new InvalidOperationException(
+				$"Unable to create registration for handler type {handlerType.FullName}");
+
+		_subscribeRegistrations.Add(registration);
+
+		return this;
+	}
+
 	public RabbitMessageQueueConfiguration ConfigQueueOptions(Action<RabbitMQOptions, IServiceProvider> configure)
 	{
 		_ = Services
 			.AddOptions<RabbitMQOptions>()
 			.Configure(configure);
-
-		return this;
-	}
-
-	[Obsolete("此方法已過時")]
-	public RabbitMessageQueueConfiguration ProcessSubjectPattern(string glob, string exchangeName)
-	{
-		_ = _coreConfiguration.AddExchange(new RabbitGlobMessageExchange(glob, exchangeName));
 
 		return this;
 	}

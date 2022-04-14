@@ -30,19 +30,6 @@ public static class ServiceCollectionExtensions
 				sp => sp.GetRequiredService<NoopMessageQueueService>());
 	}
 
-	[Obsolete("這個註冊方式準備要淘汰")]
-	public static IServiceCollection AddNatsMessageQueue(
-				this IServiceCollection services,
-		Action<NatsMessageQueueConfiguration> configure)
-	{
-		var configuration = new NatsMessageQueueConfiguration(services);
-
-		configure(configuration);
-
-		InitialNatsMessageQueueConfiguration(configuration);
-
-		return services;
-	}
 
 	public static MessageQueueConfiguration AddNatsMessageQueue(
 		this MessageQueueConfiguration configuration,

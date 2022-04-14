@@ -4,7 +4,7 @@
 		<TargetFrameworks>net6.0;net5.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
-		<Version>2.1.4</Version>
+		<Version>2.1.5</Version>
 		<Authors>Raypro</Authors>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
