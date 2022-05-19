@@ -8,5 +8,5 @@ public static class MessageQueueConfigurationExtensions
 	public static MessageQueueConfiguration AddNatsGlobPatternExchange(
 		this MessageQueueConfiguration configuration,
 		string glob)
-		=> configuration.AddGlobPatternExchange<NatsMessageQueueService>(glob);
+		=> configuration.AddGlobPatternExchange<INatsMessageQueueService>(glob);
 }

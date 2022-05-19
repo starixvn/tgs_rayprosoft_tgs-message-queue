@@ -22,14 +22,12 @@ public static class ServiceCollectionExtensions
 		}
 
 		return services
-			.AddSingleton<NoopMessageQueueService>()
-			.AddTransient<IMessageSender>(sp => sp.GetRequiredService<NoopMessageQueueService>())
+			.AddSingleton<INatsMessageQueueService, NoopMessageQueueService>()
 			.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
 				sp => sp.GetRequiredService<NoopMessageQueueService>())
 			.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
 				sp => sp.GetRequiredService<NoopMessageQueueService>());
 	}
-
 
 	public static MessageQueueConfiguration AddNatsMessageQueue(
 		this MessageQueueConfiguration configuration,
@@ -69,7 +67,7 @@ public static class ServiceCollectionExtensions
 	{
 		_ = configuration.Services
 			.AddSingleton<ConnectionFactory>()
-			.AddSingleton(sp =>
+			.AddSingleton<INatsMessageQueueService>(sp =>
 			{
 				var connectionFactory = sp.GetRequiredService<ConnectionFactory>();
 				var queueOptions = sp.GetRequiredService<IOptions<NatsOptions>>().Value;
@@ -126,12 +124,12 @@ public static class ServiceCollectionExtensions
 					connectionFactory.CreateConnection(options),
 					configuration.SessionReplySubject,
 					sp.GetRequiredService<IReplyPromiseStore>(),
-					 sp.GetRequiredService<ILogger<NatsMessageQueueService>>());
+					sp.GetRequiredService<ILogger<NatsMessageQueueService>>());
 			})
 			.AddTransient<IMessageReceiver<NatsSubscriptionSettings>>(
-				sp => sp.GetRequiredService<NatsMessageQueueService>())
+				sp => sp.GetRequiredService<INatsMessageQueueService>())
 			.AddTransient<IMessageReceiver<NatsQueueScriptionSettings>>(
-				sp => sp.GetRequiredService<NatsMessageQueueService>())
+				sp => sp.GetRequiredService<INatsMessageQueueService>())
 			.AddHostedService<MessageQueueBackground>()
 			.AddOptions<NatsOptions>();
 	}

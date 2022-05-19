@@ -46,7 +46,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 			}
 		});
 
-	private Question CreateQuestion(MessageDataInfo dataInfo, NatsMessageQueueService natsSender)
+	private Question CreateQuestion(MessageDataInfo dataInfo, INatsMessageQueueService natsSender)
 		=> _isSession
 			? new NatsQuestion(
 				dataInfo.Args.Message.Data,
@@ -77,7 +77,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 		{
 			using var scope = dataInfo.ServiceProvider.CreateScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageSession>(scope.ServiceProvider);
-			var natsSender = scope.ServiceProvider.GetRequiredService<NatsMessageQueueService>();
+			var natsSender = scope.ServiceProvider.GetRequiredService<INatsMessageQueueService>();
 			var question = CreateQuestion(dataInfo, natsSender);
 
 			await ProcessMessageAsync(

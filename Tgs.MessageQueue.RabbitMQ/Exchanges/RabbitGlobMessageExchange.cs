@@ -19,9 +19,10 @@ internal class RabbitGlobMessageExchange : IMessageExchange
 
 	public IMessageSender GetMessageSender(IServiceProvider serviceProvider)
 	{
+		var factory = serviceProvider.GetRequiredService<IMessageQueueServiceFactory>();
 		var connectionManager = serviceProvider.GetRequiredService<RabbitMQConnectionManager>();
 
-		return ActivatorUtilities.CreateInstance<RabbitMessageQueueService>(
+		return factory.CreateMessageQueueService(
 			 serviceProvider,
 			 _exchangeName,
 			 connectionManager.MessageQueueChannel);

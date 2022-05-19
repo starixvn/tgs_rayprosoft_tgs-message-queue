@@ -1,6 +1,6 @@
 ﻿namespace Tgs.MessageQueue.RabbitMQ;
 
-internal class NoopMessageQueueService : IMessageSender
+internal class NoopMessageQueueService : IMessageQueueService
 {
 	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken)
 		=> throw new NotSupportedException();
