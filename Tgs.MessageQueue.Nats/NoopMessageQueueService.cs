@@ -1,7 +1,6 @@
 ﻿namespace Tgs.MessageQueue.Nats;
 
-internal class NoopMessageQueueService
-	: IMessageSender, IMessageReceiver<NatsSubscriptionSettings>, IMessageReceiver<NatsQueueScriptionSettings>
+internal class NoopMessageQueueService : INatsMessageQueueService
 {
 	public ValueTask<Answer> AskAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken)
 		=> throw new NotImplementedException();

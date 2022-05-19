@@ -2,7 +2,7 @@
 
 namespace Tgs.MessageQueue.RabbitMQ;
 
-internal class RabbitMessageQueueService : IMessageSender
+internal class RabbitMessageQueueService : IMessageQueueService
 {
 	private readonly IModel _channel;
 	private readonly string _exchangeName;

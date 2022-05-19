@@ -5,8 +5,7 @@ using Tgs.MessageQueue.Nats.Configuration;
 
 namespace Tgs.MessageQueue.Nats;
 
-internal class NatsMessageQueueService
-	: IMessageSender, IMessageReceiver<NatsSubscriptionSettings>, IMessageReceiver<NatsQueueScriptionSettings>
+internal class NatsMessageQueueService : INatsMessageQueueService
 {
 	private readonly IConnection _connection;
 	private readonly ILogger<NatsMessageQueueService> _logger;
