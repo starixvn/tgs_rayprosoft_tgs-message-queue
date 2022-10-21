@@ -5,7 +5,7 @@ namespace Tgs.MessageQueue.RabbitMQ.Configuration;
 
 internal class SubscribeRegistration<THandler> : ISubscribeRegistration where THandler : IMessageHandler
 {
-	private static Random _Random = new Random();
+	private static readonly Random _Random = new();
 	private readonly bool _autoAck;
 	private readonly int _dispatchConcurrency;
 
@@ -54,7 +54,7 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 				(headers, key) => (headers[key] as string)!,
 				out var context))
 		{
-			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
 			activity.TraceStateString = context.TraceState;
 		}
 
