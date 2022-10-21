@@ -66,7 +66,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 				(header, key) => header[key],
 				out var context))
 		{
-			activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
 			activity.TraceStateString = context.TraceState;
 		}
 

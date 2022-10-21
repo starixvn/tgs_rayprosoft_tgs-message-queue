@@ -13,6 +13,7 @@
 		<IsPackable>true</IsPackable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>10.0</LangVersion>
+		<RootNamespace>Tgs.MessageQueue.RabbitMQ</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,15 +1,12 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
-using Tgs.MessageQueue.RabbitMQ.Exchanges;
 
 namespace Tgs.MessageQueue.RabbitMQ.Configuration;
 
 public class RabbitMessageQueueConfiguration
 {
 	internal static ActivitySource _RabbitActivitySource = new("Tgs.MessageQueue.RabbitMQ");
-
-	private readonly MessageQueueConfiguration _coreConfiguration;
 
 	private readonly List<ISubscribeRegistration> _subscribeRegistrations = new();
 
@@ -19,14 +16,15 @@ public class RabbitMessageQueueConfiguration
 	{
 		Services = services ?? throw new ArgumentNullException(nameof(services));
 
-		_coreConfiguration = services.AddMessageQueue();
+		_ = services.AddMessageQueue();
 
 		_ = Services.AddSingleton<IEnumerable<ISubscribeRegistration>>(_subscribeRegistrations);
 	}
 
 	public RabbitMessageQueueConfiguration(MessageQueueConfiguration coreConfiguration)
 	{
-		_coreConfiguration = coreConfiguration ?? throw new ArgumentNullException(nameof(coreConfiguration));
+		if (coreConfiguration is null)
+			throw new ArgumentNullException(nameof(coreConfiguration));
 
 		Services = coreConfiguration.Services;
 
