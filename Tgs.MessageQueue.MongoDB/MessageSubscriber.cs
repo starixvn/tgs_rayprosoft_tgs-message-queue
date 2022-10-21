@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Messaging;
 using MongoDB.Messaging.Subscription;
@@ -69,7 +68,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 			var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-			Task.Run(async () => await receiver.HandleAsync(payload!.Data).ConfigureAwait(false)).Wait();
+			Task.Run(async () => await receiver.HandleAsync(payload!.Data).ConfigureAwait(false)).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
 			return MessageResult.Successful;
