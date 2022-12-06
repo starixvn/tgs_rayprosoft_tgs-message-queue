@@ -10,8 +10,8 @@ namespace Tgs.MessageQueue.InProcess;
 internal class MessageQueueBackground : BackgroundService
 {
 	private readonly IEventBus _eventBus;
-	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<MessageQueueBackground> _logger;
+	private readonly IServiceProvider _serviceProvider;
 	private readonly IEnumerable<ISubscribeRegistration> _subscribeRegistrations;
 
 	public MessageQueueBackground(
@@ -28,10 +28,13 @@ internal class MessageQueueBackground : BackgroundService
 
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		var subscription = _eventBus.BucketChangedObservable
+		var subscription = _eventBus.MessageObservable
+			.Do(_ => _logger.LogDebug("msg inbound"))
 			.Select(msg => Observable.FromAsync(() => Task.Run(
 				async () =>
 				{
+					using var activity = InProcessDiagnostics.ActivitySource.StartActivity(msg.Subject);
+
 					await using var scope = _serviceProvider.CreateAsyncScope();
 
 					bool TryFindSubscription(string subject, out IMessageHandlerExecutor executor)
@@ -47,20 +50,31 @@ internal class MessageQueueBackground : BackgroundService
 						return false;
 					}
 
+					_logger.LogDebug("Process msg");
+
 					if (TryFindSubscription(msg.Subject, out var handlerExecutor))
+					{
+						_ = (activity?.AddTag("mq", "InProcess")
+							.AddTag("handler", handlerExecutor.GetType().Name));
+
 						await handlerExecutor.HandleAsync(
 							msg,
 							stoppingToken).ConfigureAwait(false);
+					}
 					else
+					{
+						_logger.LogError("Subject ({subject}) can't found handler or processor.", msg.Subject);
+
 						msg.CompletionSource.SetException(new HandlerOrProcessorNotFoundException());
+					}
 				},
 				stoppingToken))
-				.Catch<Unit, Exception>(ex =>
+				.Catch((Exception ex) =>
 				{
 					_logger.LogError(ex, "Handle message occur error.");
-
 					return Observable.Empty<Unit>();
 				}))
+			.Merge()
 			.Subscribe();
 
 		_ = stoppingToken.Register(() => subscription.Dispose());

@@ -14,5 +14,7 @@ internal class ProcessorRegistration<TProcessor> : ISubscribeRegistration
 	}
 
 	public IMessageHandlerExecutor CreateExecutor(IServiceProvider serviceProvider)
-		=> ActivatorUtilities.CreateInstance<MessageProcessorExecutor<TProcessor>>(serviceProvider);
+		=> ActivatorUtilities.CreateInstance<MessageProcessorExecutor<TProcessor>>(
+			serviceProvider,
+			ActivatorUtilities.CreateInstance<TProcessor>(serviceProvider));
 }

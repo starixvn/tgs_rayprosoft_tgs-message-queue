@@ -2,5 +2,5 @@
 
 internal interface IEventBus
 {
-	IObservable<InProcessMessage> BucketChangedObservable { get; }
+	IObservable<InProcessMessage> MessageObservable { get; }
 }
