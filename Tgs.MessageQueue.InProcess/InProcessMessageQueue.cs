@@ -6,7 +6,7 @@ internal class InProcessMessageQueue : IEventBus, IMessageSender
 {
 	private readonly BroadcastBlock<InProcessMessage> _broadcastBlock = new(null);
 
-	public IObservable<InProcessMessage> BucketChangedObservable => _broadcastBlock.AsObservable();
+	public IObservable<InProcessMessage> MessageObservable => _broadcastBlock.AsObservable();
 
 	public ValueTask<Answer> AskAsync(
 		string subject,

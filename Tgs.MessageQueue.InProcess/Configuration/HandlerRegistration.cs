@@ -14,5 +14,7 @@ internal class HandlerRegistration<THandler> : ISubscribeRegistration
 	}
 
 	public IMessageHandlerExecutor CreateExecutor(IServiceProvider serviceProvider)
-		=> ActivatorUtilities.CreateInstance<MessageHandlerExecutor<THandler>>(serviceProvider);
+		=> ActivatorUtilities.CreateInstance<MessageHandlerExecutor<THandler>>(
+			serviceProvider,
+			ActivatorUtilities.CreateInstance<THandler>(serviceProvider));
 }
