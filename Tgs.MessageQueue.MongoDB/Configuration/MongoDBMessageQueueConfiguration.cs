@@ -17,12 +17,12 @@ public class MongoDBMessageQueueConfiguration
 	}
 
 	public MongoDBMessageQueueBuilder DefineMessageQueue(
-		string name,
+		string managerName,
 		Func<IServiceProvider, MongoMessageQueueBuilderOptions> messageQueueFactory)
 	{
 		var builder = new MongoDBMessageQueueBuilder(
 			Services,
-			name,
+			managerName,
 			messageQueueFactory);
 
 		_ = Services.AddSingleton(builder);

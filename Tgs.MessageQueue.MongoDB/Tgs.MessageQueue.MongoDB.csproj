@@ -9,6 +9,8 @@
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<PackageTags>tgs</PackageTags>
+		<Authors>Raypro</Authors>
+		<RootNamespace>Tgs.MessageQueue.MongoDB</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

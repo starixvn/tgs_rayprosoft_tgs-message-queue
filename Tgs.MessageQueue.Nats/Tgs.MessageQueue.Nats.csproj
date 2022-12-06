@@ -12,6 +12,7 @@
 		<PackageTags>tgs</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>10.0</LangVersion>
+		<RootNamespace>Tgs.MessageQueue.Nats</RootNamespace>
 		<PackageId>Tgs.MessageQueue.Nats</PackageId>
 	</PropertyGroup>
 
