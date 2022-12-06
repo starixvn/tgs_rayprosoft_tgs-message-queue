@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NATS.Client;
 using NSubstitute;
@@ -124,13 +123,10 @@ public class AskModeTests
 		var replyId = Guid.NewGuid();
 		var askId = Guid.NewGuid();
 
-		var eventArg = new MsgHandlerEventArgs();
-		typeof(MsgHandlerEventArgs)
-			.GetField("msg", BindingFlags.NonPublic | BindingFlags.Instance)
-			?.SetValue(eventArg, new Msg("test", new MsgHeader {
-				{ MessageHeaderValueConsts.SessionReplyKey, replyId.ToString() },
-				{ MessageHeaderValueConsts.SessionReplySubjectKey, "test"}
-			}, Array.Empty<byte>()));
+		var eventArg = new MsgHandlerEventArgs(new Msg("test", new MsgHeader {
+			{ MessageHeaderValueConsts.SessionReplyKey, replyId.ToString() },
+			{ MessageHeaderValueConsts.SessionReplySubjectKey, "test"}
+		}, Array.Empty<byte>()));
 
 		var tcs = new TaskCompletionSource<Answer>();
 		fakePromiseStore

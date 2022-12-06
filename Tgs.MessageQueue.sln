@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.MongoDB.In
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1A6AF482-F96A-4395-9EB5-6F2D21144175}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.InProcess", "Tgs.MessageQueue.InProcess\Tgs.MessageQueue.InProcess.csproj", "{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECC35B09-4619-4F41-8B09-B414CFE3E820}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
