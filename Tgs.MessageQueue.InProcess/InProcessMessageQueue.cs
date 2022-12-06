@@ -1,0 +1,84 @@
+﻿using System.Threading.Tasks.Dataflow;
+
+namespace Tgs.MessageQueue.InProcess;
+
+internal class InProcessMessageQueue : IEventBus, IMessageSender
+{
+	private readonly BroadcastBlock<InProcessMessage> _broadcastBlock = new(null);
+
+	public IObservable<InProcessMessage> BucketChangedObservable => _broadcastBlock.AsObservable();
+
+	public ValueTask<Answer> AskAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default)
+		=> throw new NotSupportedException();
+
+	public async ValueTask PublishAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default)
+	{
+		using var activity = InProcessDiagnostics.ActivitySource.StartActivity($"InProcess Publish");
+
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		var msg = new InProcessMessage(
+			subject,
+			data.ToArray(),
+			appendHeaders,
+			new());
+
+		_ = await _broadcastBlock.SendAsync(
+			msg,
+			cancellationToken).ConfigureAwait(false);
+	}
+
+	public async ValueTask<ReadOnlyMemory<byte>> RequestAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default)
+	{
+		using var activity = InProcessDiagnostics.ActivitySource.StartActivity($"InProcess Request");
+
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		var msg = new InProcessMessage(
+			subject,
+			data.ToArray(),
+			appendHeaders,
+			new());
+
+		_ = await _broadcastBlock.SendAsync(
+			msg,
+			cancellationToken).ConfigureAwait(false);
+
+		return await msg.CompletionSource.Task.ConfigureAwait(false);
+	}
+
+	public async ValueTask SendAsync(
+		string subject,
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default)
+	{
+		using var activity = InProcessDiagnostics.ActivitySource.StartActivity($"InProcess Send");
+
+		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		var msg = new InProcessMessage(
+			subject,
+			data.ToArray(),
+			appendHeaders,
+			new());
+
+		_ = await _broadcastBlock.SendAsync(
+			msg,
+			cancellationToken).ConfigureAwait(false);
+
+		_ = await msg.CompletionSource.Task.ConfigureAwait(false);
+	}
+}

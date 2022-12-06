@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Tgs.MessageQueue.InProcess</RootNamespace>
+    <PackageId>Tgs.MessageQueue.InProcess</PackageId>
+    <Version>0.0.3</Version>
+    <Authors>Raypro</Authors>
+    <PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
+    <RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
+    <PackageTags>tgs</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.4.27">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tgs.MessageQueue\Tgs.MessageQueue.csproj" />
+  </ItemGroup>
+
+</Project>
