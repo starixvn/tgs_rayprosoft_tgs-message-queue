@@ -29,6 +29,13 @@ public class MessageQueueConfiguration
 		return this;
 	}
 
+	public MessageQueueConfiguration PushExchange(IMessageExchange exchange)
+	{
+		_messageExchanges.Insert(0, exchange);
+
+		return this;
+	}
+
 	public MessageQueueConfiguration RegisterSessionReplySubject(string subject)
 	{
 		if (string.IsNullOrWhiteSpace(subject))

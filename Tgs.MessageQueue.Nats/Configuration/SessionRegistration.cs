@@ -36,7 +36,7 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 					ServiceProvider = serviceProvider,
 					Logger = logger,
 					CancellationToken = cancellationToken
-				});
+				}).AsTask();
 			}
 		});
 
@@ -83,7 +83,7 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 		catch (Exception ex)
 		{
 			_ = (activity?.AddTag("error", true));
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			dataInfo.Logger.LogError(ex, "Handle {Subject} occur error.", Subject);
 		}
 	}
 

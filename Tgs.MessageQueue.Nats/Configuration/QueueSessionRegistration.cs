@@ -42,7 +42,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 					ServiceProvider = serviceProvider,
 					Logger = logger,
 					CancellationToken = cancellationToken
-				});
+				}).AsTask();
 			}
 		});
 
