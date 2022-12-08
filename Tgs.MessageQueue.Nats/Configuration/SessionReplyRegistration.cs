@@ -31,7 +31,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 					ServiceProvider = serviceProvider,
 					Logger = logger,
 					CancellationToken = cancellationToken
-				});
+				}).AsTask();
 			}
 		});
 

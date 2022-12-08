@@ -54,6 +54,16 @@ internal class MessageQueueBackground : BackgroundService
 
 					if (TryFindSubscription(msg.Subject, out var handlerExecutor))
 					{
+						if (activity is not null
+							&& TraceContextPropagator.TryExtract(
+								msg.MessageHeaders.ToLookup(hv => hv.Name, hv => hv.Value),
+								(header, key) => string.Join(", ", header[key]),
+								out var context))
+						{
+							_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
+							activity.TraceStateString = context.TraceState;
+						}
+
 						_ = (activity?.AddTag("mq", "InProcess")
 							.AddTag("handler", handlerExecutor.GetType().Name));
 

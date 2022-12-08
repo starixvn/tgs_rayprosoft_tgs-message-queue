@@ -25,6 +25,15 @@ internal class InProcessMessageQueue : IEventBus, IMessageSender
 
 		var appendHeaders = new List<MessageHeaderValue>(header);
 
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
+
 		var msg = new InProcessMessage(
 			subject,
 			data.ToArray(),
@@ -45,6 +54,15 @@ internal class InProcessMessageQueue : IEventBus, IMessageSender
 		using var activity = InProcessDiagnostics.ActivitySource.StartActivity($"InProcess Request");
 
 		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
 
 		var msg = new InProcessMessage(
 			subject,
@@ -68,6 +86,15 @@ internal class InProcessMessageQueue : IEventBus, IMessageSender
 		using var activity = InProcessDiagnostics.ActivitySource.StartActivity($"InProcess Send");
 
 		var appendHeaders = new List<MessageHeaderValue>(header);
+
+		TraceContextPropagator.Inject(
+			activity,
+			appendHeaders,
+			(headers, key, value) =>
+			{
+				if (!string.IsNullOrEmpty(value))
+					headers.Add(new MessageHeaderValue(key, value));
+			});
 
 		var msg = new InProcessMessage(
 			subject,
