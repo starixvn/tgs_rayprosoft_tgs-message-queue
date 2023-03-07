@@ -84,6 +84,9 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 		{
 			_ = (activity?.AddTag("error", true));
 			dataInfo.Logger.LogError(ex, "Handle {Subject} occur error.", Subject);
+
+			foreach (var handler in dataInfo.ServiceProvider.GetServices<ExceptionHandler>())
+				await handler.HandleExceptionAsync(ex).ConfigureAwait(false);
 		}
 	}
 
@@ -101,18 +104,24 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Handle {Subject} occur error.", Subject);
-
 			if (handler is IMessageExceptionProcessor exceptionProcessor)
+			{
+				logger.LogWarning(ex, "Handle {Subject} occur error, but has MessageExceptionProcessor.", Subject);
+
 				_ = await exceptionProcessor
 					.HandleExceptionAsync(question.Data, ex, cancellationToken)
 					.ConfigureAwait(false);
+			}
 			else if (question.CanResponse)
+			{
 				await question
 					.FailAsync(
 						Encoding.UTF8.GetBytes(ex.ToString()),
 						cancellationToken)
 					.ConfigureAwait(false);
+
+				throw;
+			}
 		}
 	}
 }

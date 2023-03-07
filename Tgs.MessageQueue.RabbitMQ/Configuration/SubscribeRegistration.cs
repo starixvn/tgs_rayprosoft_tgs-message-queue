@@ -85,6 +85,9 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 
 				dataInfo.Channel.BasicNack(dataInfo.Args.DeliveryTag, false, true);
 			}
+
+			foreach (var handler in dataInfo.ServiceProvider.GetServices<ExceptionHandler>())
+				await handler.HandleExceptionAsync(ex).ConfigureAwait(false);
 		}
 	}
 }

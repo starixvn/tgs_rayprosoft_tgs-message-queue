@@ -52,4 +52,13 @@ public class InProcessMessageQueueConfiguration
 
 		return this;
 	}
+
+	public InProcessMessageQueueConfiguration HandleDirectMessageException(Func<Exception, CancellationToken, Task> handleException)
+	{
+		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
+			sp,
+			handleException));
+
+		return this;
+	}
 }

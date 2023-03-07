@@ -35,7 +35,25 @@ internal class DirectHandlerMessageSender<TMessageHandler> : IMessageSender
 		_ = HandleMessageAsync(
 			subject,
 			data,
-			cancellationToken).AsTask();
+			cancellationToken).AsTask()
+			.ContinueWith(
+				async t =>
+				{
+					if (t.IsFaulted)
+					{
+						var ex = t.Exception!;
+
+						_logger.LogError(ex, "Handle {subject} occur error.", subject);
+
+						foreach (var handler in _serviceProvider.GetServices<ExceptionHandler>())
+							await handler.HandleExceptionAsync(
+								ex,
+								cancellationToken).ConfigureAwait(false);
+					}
+				},
+				cancellationToken,
+				TaskContinuationOptions.None,
+				TaskScheduler.Current);
 
 		return ValueTask.CompletedTask;
 	}
@@ -71,19 +89,9 @@ internal class DirectHandlerMessageSender<TMessageHandler> : IMessageSender
 		_ = (activity?.AddTag("mq", "Direct")
 			.AddTag("handler", typeof(TMessageHandler).Name));
 
-		try
-		{
-			await using var scope = _serviceProvider.CreateAsyncScope();
-			var handler = ActivatorUtilities.CreateInstance<TMessageHandler>(scope.ServiceProvider);
+		await using var scope = _serviceProvider.CreateAsyncScope();
+		var handler = ActivatorUtilities.CreateInstance<TMessageHandler>(scope.ServiceProvider);
 
-			await handler.HandleAsync(data, cancellationToken).ConfigureAwait(false);
-		}
-		catch (Exception ex)
-		{
-			_ = (activity?.AddTag("error", true));
-			_logger.LogError(ex, "Handle {subject} occur error.", subject);
-		}
-
-		return;
+		await handler.HandleAsync(data, cancellationToken).ConfigureAwait(false);
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Tgs.MessageQueue.Configuration;
-using MongoDBMessageQueue = MongoDB.Messaging.MessageQueue;
 
 namespace Tgs.MessageQueue.MongoDB.Configuration;
 
@@ -28,5 +27,14 @@ public class MongoDBMessageQueueConfiguration
 		_ = Services.AddSingleton(builder);
 
 		return builder;
+	}
+
+	public MongoDBMessageQueueConfiguration HandleDirectMessageException(Func<Exception, CancellationToken, Task> handleException)
+	{
+		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
+			sp,
+			handleException));
+
+		return this;
 	}
 }

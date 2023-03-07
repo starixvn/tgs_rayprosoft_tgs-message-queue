@@ -79,11 +79,16 @@ internal class MessageQueueBackground : BackgroundService
 					}
 				},
 				stoppingToken))
-				.Catch((Exception ex) =>
+				.Catch((Exception ex) => Observable.FromAsync(async () =>
 				{
 					_logger.LogError(ex, "Handle message occur error.");
-					return Observable.Empty<Unit>();
-				}))
+
+					foreach (var handler in _serviceProvider.GetServices<ExceptionHandler>())
+						await handler.HandleExceptionAsync(
+							ex,
+							stoppingToken).ConfigureAwait(false);
+					return Unit.Default;
+				})))
 			.Merge()
 			.Subscribe();
 
