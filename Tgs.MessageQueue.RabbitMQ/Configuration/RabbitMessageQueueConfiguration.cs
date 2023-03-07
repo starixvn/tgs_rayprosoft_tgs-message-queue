@@ -55,10 +55,8 @@ public class RabbitMessageQueueConfiguration
 			exchangeName,
 			routingKey,
 			autoAck,
-			dispatchConcurrency);
-
-		if (registration == null)
-			throw new InvalidOperationException(
+			dispatchConcurrency)
+			?? throw new InvalidOperationException(
 				$"Unable to create registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);

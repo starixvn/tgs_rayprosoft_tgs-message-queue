@@ -52,10 +52,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddHandler(Type handlerType, string subject, string group)
 	{
 		var registrationType = typeof(QueueRegistration<>).MakeGenericType(handlerType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group)
+			?? throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -72,10 +70,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddProcessor(Type processorType, string subject)
 	{
 		var registrationType = typeof(ProcessRegistration<>).MakeGenericType(processorType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject)
+			?? throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -92,10 +88,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddProcessor(Type processorType, string subject, string queue)
 	{
 		var registrationType = typeof(QueueProcessRegistration<>).MakeGenericType(processorType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, queue);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, queue)
+			?? throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -112,10 +106,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddReplyHandler(Type handlerType, string subject)
 	{
 		var registrationType = typeof(ReplyRegistration<>).MakeGenericType(handlerType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject)
+			?? throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -132,10 +124,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddReplyHandler(Type handlerType, string subject, string group)
 	{
 		var registrationType = typeof(QueueReplyRegistration<>).MakeGenericType(handlerType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group)
+			?? throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -152,10 +142,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddSession(Type sessionType, string subject)
 	{
 		var registrationType = typeof(SessionRegistration<>).MakeGenericType(sessionType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for session type {sessionType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject)
+			?? throw new InvalidOperationException($"Unable to create a registration for session type {sessionType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -172,10 +160,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddSession(Type sessionType, string subject, string group)
 	{
 		var registrationType = typeof(QueueSessionRegistration<>).MakeGenericType(sessionType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for session type {sessionType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject, group)
+			?? throw new InvalidOperationException($"Unable to create a registration for session type {sessionType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
