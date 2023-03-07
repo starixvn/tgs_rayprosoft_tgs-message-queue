@@ -29,7 +29,7 @@ public class MongoDBMessageQueueConfiguration
 		return builder;
 	}
 
-	public MongoDBMessageQueueConfiguration HandleDirectMessageException(Func<Exception, CancellationToken, Task> handleException)
+	public MongoDBMessageQueueConfiguration HandleMongoMessageException(Func<Exception, CancellationToken, Task> handleException)
 	{
 		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
 			sp,
