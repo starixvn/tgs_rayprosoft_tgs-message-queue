@@ -60,26 +60,26 @@ internal class RabbitSubscription : IDisposable
 
 	private void Channel_ModelShutdown(object? sender, ShutdownEventArgs e)
 	{
-		_logger.LogInformation($"Receiver({_subject}) ModelShutdownEvent");
+		_logger.LogInformation("Receiver({_subject}) ModelShutdownEvent", _subject);
 	}
 
 	private void Connection_CallbackException(object? sender, CallbackExceptionEventArgs e)
 	{
-		_logger.LogError(e.Exception, $"Receiver({_subject}) CallbackExceptionEvent");
+		_logger.LogError(e.Exception, "Receiver({_subject}) CallbackExceptionEvent", _subject);
 	}
 
 	private void Connection_ConnectionBlocked(object? sender, ConnectionBlockedEventArgs e)
 	{
-		_logger.LogInformation($"Receiver({_subject}) ConnectionBlockedEvent, Reason: {e.Reason}");
+		_logger.LogInformation("Receiver({_subject}) ConnectionBlockedEvent, Reason: {e.Reason}", _subject, e.Reason);
 	}
 
 	private void Connection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
 	{
-		_logger.LogInformation($"Receiver({_subject}) ConnectionShutdownEvent");
+		_logger.LogInformation("Receiver({_subject}) ConnectionShutdownEvent", _subject);
 	}
 
 	private void Connection_ConnectionUnblocked(object? sender, EventArgs e)
 	{
-		_logger.LogInformation($"Receiver({_subject}) ConnectionUnblockedEvent");
+		_logger.LogInformation("Receiver({_subject}) ConnectionUnblockedEvent", _subject);
 	}
 }

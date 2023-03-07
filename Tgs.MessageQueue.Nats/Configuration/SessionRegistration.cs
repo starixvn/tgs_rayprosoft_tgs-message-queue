@@ -101,7 +101,7 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, $"Handle {Subject} occur error.");
+			logger.LogError(ex, "Handle {Subject} occur error.", Subject);
 
 			if (handler is IMessageExceptionProcessor exceptionProcessor)
 				_ = await exceptionProcessor

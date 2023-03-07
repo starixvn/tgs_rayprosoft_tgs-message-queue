@@ -177,7 +177,7 @@ internal class NatsMessageQueueService : INatsMessageQueueService
 	{
 		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity($"Nats Internal Ask");
 
-		_logger.LogInformation($"Internal Ask: {subject}");
+		_logger.LogInformation("Internal Ask: {subject}", subject);
 		var (id, promise) = _replyPromiseStore.CreatePromise(cancellationToken);
 
 		var appendHeaders = new List<MessageHeaderValue>();

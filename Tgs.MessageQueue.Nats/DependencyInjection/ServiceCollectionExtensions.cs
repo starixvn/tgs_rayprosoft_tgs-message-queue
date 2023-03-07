@@ -73,7 +73,7 @@ public static class ServiceCollectionExtensions
 				var queueOptions = sp.GetRequiredService<IOptions<NatsOptions>>().Value;
 				var logger = sp.GetRequiredService<ILogger<NatsOptions>>();
 
-				logger.LogDebug($"Nats connection url: {queueOptions.Url}");
+				logger.LogDebug("Nats connection url: {queueOptions.Url}", queueOptions.Url);
 
 				var options = ConnectionFactory.GetDefaultOptions();
 
@@ -105,7 +105,7 @@ public static class ServiceCollectionExtensions
 				};
 				options.ReconnectDelayHandler = (sender, args) =>
 				{
-					logger.LogInformation($"ReconnectDelay Attempts: {args.Attempts}");
+					logger.LogInformation("ReconnectDelay Attempts: {args.Attempts}", args.Attempts);
 				};
 				options.ReconnectedEventHandler = (sender, args) =>
 				{
@@ -136,7 +136,9 @@ public static class ServiceCollectionExtensions
 
 	private static void WriteError<T>(this ILogger<T> logger, string label, ErrEventArgs? e)
 	{
-		logger.LogError((e == null) ? label : BeginFormatMessage(label, e.Conn, e.Subscription, e.Error).ToString());
+		logger.LogError("{msg}", e == null
+			? label
+			: BeginFormatMessage(label, e.Conn, e.Subscription, e.Error).ToString());
 	}
 
 	private static void WriteEvent<T>(this ILogger<T> logger, string label, ConnJsSubEventArgs e, params object?[] pairs)
@@ -148,11 +150,13 @@ public static class ServiceCollectionExtensions
 			_ = stringBuilder.Append(", ").Append(pairs[num]).Append(pairs[++num]);
 		}
 
-		logger.LogInformation(stringBuilder.ToString());
+		logger.LogInformation("{msg}", stringBuilder.ToString());
 	}
 
 	private static void WriteEvent<T>(this ILogger<T> logger, string label, ConnEventArgs? e)
 	{
-		logger.LogInformation((e == null) ? label : BeginFormatMessage(label, e.Conn, null, e.Error?.Message).ToString());
+		logger.LogInformation("{msg}", e == null
+			? label
+			: BeginFormatMessage(label, e.Conn, null, e.Error?.Message).ToString());
 	}
 }

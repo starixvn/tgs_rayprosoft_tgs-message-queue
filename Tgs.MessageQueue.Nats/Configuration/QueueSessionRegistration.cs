@@ -89,7 +89,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 		catch (Exception ex)
 		{
 			_ = (activity?.AddTag("error", true));
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			dataInfo.Logger.LogError(ex, "Handle {Subject} occur error.", Subject);
 		}
 	}
 
@@ -107,7 +107,7 @@ internal class QueueSessionRegistration<TMessageSession> : ISubscribeRegistratio
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, $"Handle {Subject} occur error.");
+			logger.LogError(ex, "Handle {Subject} occur error.", Subject);
 
 			if (handler is IMessageExceptionProcessor exceptionProcessor)
 				_ = await exceptionProcessor

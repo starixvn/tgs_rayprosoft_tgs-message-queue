@@ -177,6 +177,15 @@ public class NatsMessageQueueConfiguration
 		return this;
 	}
 
+	public NatsMessageQueueConfiguration HandleNatsMessageException(Func<Exception, CancellationToken, Task> handleException)
+	{
+		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
+			sp,
+			handleException));
+
+		return this;
+	}
+
 	public NatsMessageQueueConfiguration SetSessionReplySubject(string subject)
 	{
 		if (string.IsNullOrWhiteSpace(subject))
