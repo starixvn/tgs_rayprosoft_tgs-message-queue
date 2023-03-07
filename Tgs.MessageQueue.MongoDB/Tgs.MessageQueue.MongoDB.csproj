@@ -11,6 +11,7 @@
 		<PackageTags>tgs</PackageTags>
 		<Authors>Raypro</Authors>
 		<RootNamespace>Tgs.MessageQueue.MongoDB</RootNamespace>
+		<PackageId>Tgs.MessageQueue.MongoDB</PackageId>
 	</PropertyGroup>
 
 	<ItemGroup>
