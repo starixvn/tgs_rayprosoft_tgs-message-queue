@@ -77,7 +77,7 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 		catch (Exception ex)
 		{
 			_ = (activity?.AddTag("error", true));
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			dataInfo.Logger.LogError(ex, "Handle {Subject} occur error.", Subject);
 
 			if (!_autoAck)
 			{
@@ -85,6 +85,9 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 
 				dataInfo.Channel.BasicNack(dataInfo.Args.DeliveryTag, false, true);
 			}
+
+			foreach (var handler in dataInfo.ServiceProvider.GetServices<ExceptionHandler>())
+				await handler.HandleExceptionAsync(ex).ConfigureAwait(false);
 		}
 	}
 }

@@ -61,7 +61,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 				? dataInfo.Args.Message.Header.GetValues(MessageHeaderValueConsts.SessionReplyKey)?.FirstOrDefault()
 				: null;
 
-			dataInfo.Logger.LogInformation($"ReplyId: {replyId}");
+			dataInfo.Logger.LogInformation("ReplyId: {replyId}", replyId);
 
 			if (replyId is not null && Guid.TryParse(replyId, out var replyGuid))
 			{
@@ -75,7 +75,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 					? dataInfo.Args.Message.Header.GetValues(MessageHeaderValueConsts.SessionAskKey)?.FirstOrDefault()
 					: null;
 
-				dataInfo.Logger.LogInformation($"AskId: {askId}");
+				dataInfo.Logger.LogInformation("AskId: {askId}", askId);
 
 				if (isFail)
 					store.SetException(replyGuid, new MessageProcessFailException(dataInfo.Args.Message.Data));
@@ -92,7 +92,10 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 		catch (Exception ex)
 		{
 			_ = activity?.AddTag("error", true);
-			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
+			dataInfo.Logger.LogError(ex, "Handle {Subject} occur error.", Subject);
+
+			foreach (var handler in dataInfo.ServiceProvider.GetServices<ExceptionHandler>())
+				await handler.HandleExceptionAsync(ex).ConfigureAwait(false);
 		}
 	}
 }

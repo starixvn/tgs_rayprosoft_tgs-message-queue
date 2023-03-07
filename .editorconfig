@@ -239,5 +239,3 @@ dotnet_naming_style.begins_with_underscore_camlcase.required_prefix = _
 dotnet_naming_style.begins_with_underscore_camlcase.required_suffix = 
 dotnet_naming_style.begins_with_underscore_camlcase.word_separator = 
 dotnet_naming_style.begins_with_underscore_camlcase.capitalization = camel_case
-
-dotnet_diagnostic.CA2254.severity = silent

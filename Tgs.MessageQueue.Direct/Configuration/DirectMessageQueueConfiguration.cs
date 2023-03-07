@@ -70,4 +70,13 @@ public class DirectMessageQueueConfiguration
 
 		return this;
 	}
+
+	public DirectMessageQueueConfiguration HandleDirectMessageException(Func<Exception, CancellationToken, Task> handleException)
+	{
+		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
+			sp,
+			handleException));
+
+		return this;
+	}
 }

@@ -35,6 +35,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		GC.SuppressFinalize(this);
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "<暫止>")]
 	public MessageResult Process(ProcessContext processContext)
 	{
 		using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(processContext.Container.Name);
@@ -61,15 +62,16 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 			activity.TraceStateString = context.TraceState;
 		}
 
-		using var scope = _serviceProvider.CreateScope();
-
 		try
 		{
-			var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
+			Task.Run(async () =>
+			{
+				await using var scope = _serviceProvider.CreateAsyncScope();
 
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-			Task.Run(async () => await receiver.HandleAsync(payload!.Data).ConfigureAwait(false)).GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+				var receiver = scope.ServiceProvider.GetRequiredService<TReceiver>();
+
+				await receiver.HandleAsync(payload!.Data).ConfigureAwait(false);
+			}).GetAwaiter().GetResult();
 
 			return MessageResult.Successful;
 		}
@@ -77,6 +79,13 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		{
 			_ = (activity?.AddTag("error", true));
 			_logger.LogError(ex, "Process fail.");
+
+			Task.Run(async () =>
+			{
+				foreach (var handler in _serviceProvider.GetServices<ExceptionHandler>())
+					await handler.HandleExceptionAsync(
+						ex).ConfigureAwait(false);
+			}).GetAwaiter().GetResult();
 
 			return MessageResult.Error;
 		}

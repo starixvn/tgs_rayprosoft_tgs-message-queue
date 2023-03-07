@@ -116,7 +116,7 @@ internal class RabbitMQConnectionManager : IDisposable, IMessageReceiver<RabbitS
 
 	private void Connection_ConnectionBlocked(object? sender, ConnectionBlockedEventArgs e)
 	{
-		_logger.LogInformation($"Sender ConnectionBlockedEvent, Reason: {e.Reason}");
+		_logger.LogInformation("Sender ConnectionBlockedEvent, Reason: {reason}", e.Reason);
 	}
 
 	private void Connection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
