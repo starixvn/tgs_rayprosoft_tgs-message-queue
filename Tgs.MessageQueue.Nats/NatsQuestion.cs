@@ -17,16 +17,17 @@ internal record NatsQuestion : Question
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
 	}
 
-	public override ValueTask<Answer> AskAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
-	{
-		return CanResponse
+	public override ValueTask<Answer> AskAsync(
+		ReadOnlyMemory<byte> data,
+		IEnumerable<MessageHeaderValue> header,
+		CancellationToken cancellationToken = default)
+		=> CanResponse
 			? _messageSender.AskAsync(
 				_replySubject!,
 				data,
 				header.Concat(new[] { new MessageHeaderValue(MessageHeaderValueConsts.SessionAskKey, string.Empty) }),
 				cancellationToken)
 			: throw new NatsReplySubjectNullException();
-	}
 
 	public override ValueTask CompleteAsync(ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue> header, CancellationToken cancellationToken = default)
 		=> CanResponse

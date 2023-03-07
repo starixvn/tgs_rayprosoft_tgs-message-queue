@@ -31,7 +31,7 @@ internal class MultiplexerMessageSender : IMessageSender, IMessageExchange
 		return sender.AskAsync(subject, data, header, cancellationToken);
 	}
 
-	public IMessageSender GetMessageSender(IServiceProvider serviceProvider) => this;
+	public IMessageSender GetMessageSender(string pattern, IServiceProvider serviceProvider) => this;
 
 	public bool Match(string subject, IEnumerable<MessageHeaderValue> header) => true;
 
@@ -82,7 +82,7 @@ internal class MultiplexerMessageSender : IMessageSender, IMessageExchange
 
 		foreach (var exchange in _exchanges)
 			if (exchange.Match(subject, header))
-				return exchange.GetMessageSender(_serviceProvider);
+				return exchange.GetMessageSender(subject, _serviceProvider);
 
 		throw new MessageSenderNotFoundException(subject);
 	}

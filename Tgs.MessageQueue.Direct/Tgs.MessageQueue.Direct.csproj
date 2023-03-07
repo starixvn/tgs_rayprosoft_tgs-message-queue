@@ -5,6 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Tgs.MessageQueue.Direct</RootNamespace>
+    <PackageId>Tgs.MessageQueue.Direct</PackageId>
+    <Version>0.0.1-alpha</Version>
+    <Authors>Raypro</Authors>
+    <PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
+    <RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
+    <PackageTags>tgs;messagequeue;direct</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

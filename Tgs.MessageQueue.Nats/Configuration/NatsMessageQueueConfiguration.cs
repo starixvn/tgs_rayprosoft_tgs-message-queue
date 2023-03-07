@@ -34,10 +34,8 @@ public class NatsMessageQueueConfiguration
 	public NatsMessageQueueConfiguration AddHandler(Type handlerType, string subject)
 	{
 		var registrationType = typeof(SubscribeRegistration<>).MakeGenericType(handlerType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject);
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, subject)
+			?? throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 

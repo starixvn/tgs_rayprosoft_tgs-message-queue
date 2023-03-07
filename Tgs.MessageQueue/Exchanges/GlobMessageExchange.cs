@@ -13,7 +13,7 @@ internal class GlobMessageExchange<TMessageSender> : IMessageExchange
 		_glob = Glob.Parse(pattern);
 	}
 
-	public IMessageSender GetMessageSender(IServiceProvider serviceProvider)
+	public IMessageSender GetMessageSender(string subject, IServiceProvider serviceProvider)
 		=> serviceProvider.GetRequiredService<TMessageSender>();
 
 	public bool Match(string subject, IEnumerable<MessageHeaderValue> header)

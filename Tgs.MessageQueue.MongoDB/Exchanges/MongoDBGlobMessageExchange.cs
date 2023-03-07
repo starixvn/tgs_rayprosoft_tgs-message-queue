@@ -21,7 +21,7 @@ internal class MongoDBGlobMessageExchange : IMessageExchange
 		_queueName = queueName;
 	}
 
-	public IMessageSender GetMessageSender(IServiceProvider serviceProvider)
+	public IMessageSender GetMessageSender(string subject, IServiceProvider serviceProvider)
 	{
 		var queueManagerService = serviceProvider.GetRequiredService<QueueManagerService>();
 

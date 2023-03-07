@@ -9,7 +9,7 @@
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>tgs</PackageTags>
+		<PackageTags>tgs;messagequeue;nats</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>10.0</LangVersion>
 		<RootNamespace>Tgs.MessageQueue.Nats</RootNamespace>

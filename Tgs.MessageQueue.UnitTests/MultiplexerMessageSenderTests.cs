@@ -1,4 +1,4 @@
-using NSubstitute;
+﻿using NSubstitute;
 using NUnit.Framework;
 
 namespace Tgs.MessageQueue.UnitTests;
@@ -30,10 +30,10 @@ public class MultiplexerMessageSenderTests
 		await sut.PublishAsync("test", Array.Empty<byte>());
 
 		_ = exchange1.Received(1)
-			.GetMessageSender(Arg.Any<IServiceProvider>());
+			.GetMessageSender(Arg.Is("test"), Arg.Any<IServiceProvider>());
 
 		_ = exchange2.Received(0)
-			.GetMessageSender(Arg.Any<IServiceProvider>());
+			.GetMessageSender(Arg.Is("test"), Arg.Any<IServiceProvider>());
 	}
 
 	[Test]
