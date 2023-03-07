@@ -73,7 +73,7 @@ internal class DirectHandlerMessageSender<TMessageHandler> : IMessageSender
 
 		try
 		{
-			using var scope = _serviceProvider.CreateScope();
+			await using var scope = _serviceProvider.CreateAsyncScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageHandler>(scope.ServiceProvider);
 
 			await handler.HandleAsync(data, cancellationToken).ConfigureAwait(false);
