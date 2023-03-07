@@ -32,19 +32,10 @@ internal class DirectHandlerMessageSender<TMessageHandler> : IMessageSender
 	{
 		using var activity = DirectDiagnostics.ActivitySource.StartActivity($"Direct Publish");
 
-		var appendHeaders = new List<MessageHeaderValue>(header);
-
-		TraceContextPropagator.Inject(
-			activity,
-			appendHeaders,
-			(headers, key, value) =>
-			{
-				if (!string.IsNullOrEmpty(value))
-					headers.Add(new MessageHeaderValue(key, value));
-			});
-		cancellationToken.ThrowIfCancellationRequested();
-
-		_ = HandleMessageAsync(subject, data, appendHeaders, cancellationToken).AsTask();
+		_ = HandleMessageAsync(
+			subject,
+			data,
+			cancellationToken).AsTask();
 
 		return ValueTask.CompletedTask;
 	}
@@ -56,39 +47,33 @@ internal class DirectHandlerMessageSender<TMessageHandler> : IMessageSender
 		CancellationToken cancellationToken = default)
 		=> throw new NotSupportedException();
 
-	public ValueTask SendAsync(
+	public async ValueTask SendAsync(
 		string subject,
 		ReadOnlyMemory<byte> data,
 		IEnumerable<MessageHeaderValue> header,
 		CancellationToken cancellationToken = default)
 	{
-		throw new NotImplementedException();
+		using var activity = DirectDiagnostics.ActivitySource.StartActivity($"Direct Publish");
+
+		await HandleMessageAsync(
+			subject,
+			data,
+			cancellationToken).ConfigureAwait(false);
 	}
 
 	private async ValueTask HandleMessageAsync(
 		string subject,
 		ReadOnlyMemory<byte> data,
-		IEnumerable<MessageHeaderValue> headers,
 		CancellationToken cancellationToken)
 	{
 		using var activity = DirectDiagnostics.ActivitySource.StartActivity(subject);
-
-		if (activity is not null
-			&& TraceContextPropagator.TryExtract(
-				headers.ToLookup(hv => hv.Name, hv => hv.Value),
-				(header, key) => string.Join(", ", header[key]),
-				out var context))
-		{
-			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
-			activity.TraceStateString = context.TraceState;
-		}
 
 		_ = (activity?.AddTag("mq", "Direct")
 			.AddTag("handler", typeof(TMessageHandler).Name));
 
 		try
 		{
-			using var scope = _serviceProvider.CreateScope();
+			await using var scope = _serviceProvider.CreateAsyncScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageHandler>(scope.ServiceProvider);
 
 			await handler.HandleAsync(data, cancellationToken).ConfigureAwait(false);

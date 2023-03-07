@@ -4,12 +4,12 @@
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
-		<Version>2.1.7</Version>
+		<Version>2.2.0</Version>
 		<Authors>Raypro</Authors>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>tgs</PackageTags>
+		<PackageTags>tgs;messagequeue;nats</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>10.0</LangVersion>
 		<RootNamespace>Tgs.MessageQueue.Nats</RootNamespace>

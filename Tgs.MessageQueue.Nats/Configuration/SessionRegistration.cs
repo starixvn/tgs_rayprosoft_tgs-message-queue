@@ -69,7 +69,7 @@ internal class SessionRegistration<TMessageSession> : ISubscribeRegistration
 
 		try
 		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
+			await using var scope = dataInfo.ServiceProvider.CreateAsyncScope();
 			var handler = ActivatorUtilities.CreateInstance<TMessageSession>(scope.ServiceProvider);
 			var natsSender = scope.ServiceProvider.GetRequiredService<INatsMessageQueueService>();
 			var question = CreateQuestion(dataInfo, natsSender);

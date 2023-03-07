@@ -27,10 +27,8 @@ public class InProcessMessageQueueConfiguration
 	public InProcessMessageQueueConfiguration AddHandler(Type handlerType, string subject)
 	{
 		var registrationType = typeof(HandlerRegistration<>).MakeGenericType(handlerType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, Glob.Parse(subject));
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, Glob.Parse(subject))
+			?? throw new InvalidOperationException($"Unable to create a registration for handler type {handlerType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 
@@ -47,10 +45,8 @@ public class InProcessMessageQueueConfiguration
 	public InProcessMessageQueueConfiguration AddProcessor(Type processorType, string subject)
 	{
 		var registrationType = typeof(ProcessorRegistration<>).MakeGenericType(processorType);
-		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, Glob.Parse(subject));
-
-		if (registration == null)
-			throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
+		var registration = (ISubscribeRegistration?)Activator.CreateInstance(registrationType, Glob.Parse(subject))
+			?? throw new InvalidOperationException($"Unable to create a registration for processor type {processorType.FullName}");
 
 		_subscribeRegistrations.Add(registration);
 

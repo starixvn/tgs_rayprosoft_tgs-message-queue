@@ -2,7 +2,7 @@
 
 public interface IMessageExchange
 {
-	IMessageSender GetMessageSender(IServiceProvider serviceProvider);
+	IMessageSender GetMessageSender(string subject, IServiceProvider serviceProvider);
 
 	bool Match(string subject, IEnumerable<MessageHeaderValue> header);
 }

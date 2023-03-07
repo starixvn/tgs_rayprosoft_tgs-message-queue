@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1A6AF482
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.InProcess", "Tgs.MessageQueue.InProcess\Tgs.MessageQueue.InProcess.csproj", "{1BFAEE97-A41D-4CEB-A9D7-8D61B407FA4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.Direct", "Tgs.MessageQueue.Direct\Tgs.MessageQueue.Direct.csproj", "{31FD0106-5B7C-44BA-B992-DBD047C27DFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.Direct", "Tgs.MessageQueue.Direct\Tgs.MessageQueue.Direct.csproj", "{31FD0106-5B7C-44BA-B992-DBD047C27DFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

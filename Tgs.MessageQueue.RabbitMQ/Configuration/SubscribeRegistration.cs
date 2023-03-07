@@ -63,7 +63,7 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 
 		try
 		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
+			await using var scope = dataInfo.ServiceProvider.CreateAsyncScope();
 
 			var handler = ActivatorUtilities.CreateInstance<THandler>(scope.ServiceProvider);
 

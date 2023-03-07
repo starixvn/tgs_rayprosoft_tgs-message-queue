@@ -35,7 +35,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 			}
 		});
 
-	private ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
+	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
 		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
 
@@ -54,7 +54,7 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 
 		try
 		{
-			using var scope = dataInfo.ServiceProvider.CreateScope();
+			await using var scope = dataInfo.ServiceProvider.CreateAsyncScope();
 			var store = scope.ServiceProvider.GetRequiredService<IReplyPromiseStore>();
 			var replySender = scope.ServiceProvider.GetRequiredService<IMessageSender>();
 			var replyId = dataInfo.Args.Message.HasHeaders
@@ -94,7 +94,5 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 			_ = activity?.AddTag("error", true);
 			dataInfo.Logger.LogError(ex, $"Handle {Subject} occur error.");
 		}
-
-		return ValueTask.CompletedTask;
 	}
 }
