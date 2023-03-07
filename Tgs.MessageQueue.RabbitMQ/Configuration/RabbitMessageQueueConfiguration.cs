@@ -72,4 +72,13 @@ public class RabbitMessageQueueConfiguration
 
 		return this;
 	}
+
+	public RabbitMessageQueueConfiguration HandleRabbitMessageException(Func<Exception, CancellationToken, Task> handleException)
+	{
+		_ = Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ExceptionHandler>(
+			sp,
+			handleException));
+
+		return this;
+	}
 }
