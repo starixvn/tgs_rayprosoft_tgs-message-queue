@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.Nats.Configuration;
@@ -37,20 +38,25 @@ internal class SessionReplyRegistration : ISubscribeRegistration
 
 	private async ValueTask HandleMessageAsync(MessageDataInfo dataInfo)
 	{
-		using var activity = NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(Subject);
-
-		if (dataInfo.Args.Message.HasHeaders
-			&& activity is not null
-			&& TraceContextPropagator.TryExtract(
-				dataInfo.Args.Message.Header,
-				(header, key) => header[key],
-				out var context))
-		{
-			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
-			activity.TraceStateString = context.TraceState;
-		}
-
-		_ = activity?.AddTag("mq", "NATS");
+		using var activity = TraceContextPropagator.TryExtract(
+			dataInfo.Args.Message.Header,
+			(header, key) => header[key],
+			out var context)
+			? NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(
+				Subject,
+				ActivityKind.Server,
+				context,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "NATS")
+				})
+			: NatsMessageQueueConfiguration._NatsActivitySource.StartActivity(
+				ActivityKind.Server,
+				name: Subject,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "NATS")
+				});
 
 		try
 		{

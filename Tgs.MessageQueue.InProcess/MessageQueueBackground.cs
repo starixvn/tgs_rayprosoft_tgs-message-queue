@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+﻿using System.Diagnostics;
+using System.Reactive;
 using System.Reactive.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,7 +34,15 @@ internal class MessageQueueBackground : BackgroundService
 			.Select(msg => Observable.FromAsync(() => Task.Run(
 				async () =>
 				{
-					using var activity = InProcessDiagnostics.ActivitySource.StartActivity(msg.Subject);
+					using var activity = TraceContextPropagator.TryExtract(
+						msg.MessageHeaders.ToLookup(hv => hv.Name, hv => hv.Value),
+						(header, key) => string.Join(", ", header[key]),
+						out var context)
+						? InProcessDiagnostics.ActivitySource.StartActivity(
+							msg.Subject,
+							ActivityKind.Internal,
+							context)
+						: InProcessDiagnostics.ActivitySource.StartActivity(msg.Subject);
 
 					await using var scope = _serviceProvider.CreateAsyncScope();
 
@@ -54,16 +63,6 @@ internal class MessageQueueBackground : BackgroundService
 
 					if (TryFindSubscription(msg.Subject, out var handlerExecutor))
 					{
-						if (activity is not null
-							&& TraceContextPropagator.TryExtract(
-								msg.MessageHeaders.ToLookup(hv => hv.Name, hv => hv.Value),
-								(header, key) => string.Join(", ", header[key]),
-								out var context))
-						{
-							_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
-							activity.TraceStateString = context.TraceState;
-						}
-
 						_ = (activity?.AddTag("mq", "InProcess")
 							.AddTag("handler", handlerExecutor.GetType().Name));
 

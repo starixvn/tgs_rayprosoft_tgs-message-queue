@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Tgs.MessageQueue.InProcess</RootNamespace>
     <PackageId>Tgs.MessageQueue.InProcess</PackageId>
-    <Version>0.2.1</Version>
+    <Version>2.3.0</Version>
     <Authors>Raypro</Authors>
     <PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
     <RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
