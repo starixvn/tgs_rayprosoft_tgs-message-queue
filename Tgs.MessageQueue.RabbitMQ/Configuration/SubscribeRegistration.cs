@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Tgs.MessageQueue.RabbitMQ.Configuration;
@@ -46,20 +47,27 @@ internal class SubscribeRegistration<THandler> : ISubscribeRegistration where TH
 
 	private async Task HandleMessageAsync(MessageDataInfo dataInfo)
 	{
-		using var activity = RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity(Subject);
-
-		if (activity is not null
-			&& TraceContextPropagator.TryExtract(
-				dataInfo.Args.BasicProperties.Headers,
-				(headers, key) => (headers[key] as string)!,
-				out var context))
-		{
-			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
-			activity.TraceStateString = context.TraceState;
-		}
-
-		_ = (activity?.AddTag("mq", "RabbitMQ")
-			.AddTag("handler", typeof(THandler).Name));
+		using var activity = TraceContextPropagator.TryExtract(
+			dataInfo.Args.BasicProperties.Headers,
+			(headers, key) => (headers[key] as string)!,
+			out var context)
+			? RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity(
+				Subject,
+				ActivityKind.Server,
+				context,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "RabbitMQ"),
+					new KeyValuePair<string, object?>("handler", typeof(THandler).Name)
+				})
+			: RabbitMQConnectionManager._RabbitMQActivitySource.StartActivity(
+				ActivityKind.Server,
+				name: Subject,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "RabbitMQ"),
+					new KeyValuePair<string, object?>("handler", typeof(THandler).Name)
+				});
 
 		try
 		{

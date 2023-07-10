@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Messaging;
 using MongoDB.Messaging.Subscription;
@@ -38,29 +39,34 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "<暫止>")]
 	public MessageResult Process(ProcessContext processContext)
 	{
-		using var activity = MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(processContext.Container.Name);
-
-		_ = (activity?.AddTag("mq", "MongoDB")
-			.AddTag("handler", typeof(TReceiver).Name));
+		using var activity = TraceContextPropagator.TryExtract(
+			processContext.Data<MongoMessage>(),
+			(p, key) => key switch
+			{
+				TraceContextPropagator.TraceParent => p.TraceParent!,
+				TraceContextPropagator.TraceState => p.TraceState!,
+				_ => string.Empty
+			},
+			out var context)
+			? MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(
+				processContext.Container.Name,
+				ActivityKind.Server,
+				context,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "MongoDB"),
+					new KeyValuePair<string, object?>("handler", typeof(TReceiver).Name)
+				})
+			: MongoDBMessageQueueConfiguration._MongoActivitySource.StartActivity(
+				ActivityKind.Server,
+				name: processContext.Container.Name,
+				tags: new[]
+				{
+					new KeyValuePair<string, object?>("mq", "MongoDB"),
+					new KeyValuePair<string, object?>("handler", typeof(TReceiver).Name)
+				});
 
 		var payload = processContext.Data<MongoMessage>();
-
-		if (activity is not null
-			&& payload is not null
-			&& !string.IsNullOrEmpty(payload.TraceParent)
-			&& TraceContextPropagator.TryExtract(
-				payload,
-				(p, key) => key switch
-				{
-					TraceContextPropagator.TraceParent => p.TraceParent!,
-					TraceContextPropagator.TraceState => p.TraceState!,
-					_ => string.Empty
-				},
-				out var context))
-		{
-			_ = activity.SetParentId(context.TraceId, context.SpanId, context.TraceFlags);
-			activity.TraceStateString = context.TraceState;
-		}
 
 		try
 		{
