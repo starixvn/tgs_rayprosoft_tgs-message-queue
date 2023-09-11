@@ -11,6 +11,7 @@ internal record AnswerWrapper : Tgs::Tgs.MessageQueue.Answer
 	public AnswerWrapper(Answer answer)
 	{
 		_answer = answer ?? throw new ArgumentNullException(nameof(answer));
+		Result = answer.Result;
 	}
 	public override bool CanResponse => _answer.CanResponse;
 

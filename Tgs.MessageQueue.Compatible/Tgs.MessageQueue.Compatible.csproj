@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <PackageId>Tgs.MessageQueue.Compatible</PackageId>
     <Product>Tgs.MessageQueue.Compatible</Product>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Raypro</Authors>
     <Description>相容新套件PhoenixToolkits.MessageQueue
 </Description>
