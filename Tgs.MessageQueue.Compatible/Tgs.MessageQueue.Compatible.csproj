@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Tgs.MessageQueue.Compatible</PackageId>
+    <Product>Tgs.MessageQueue.Compatible</Product>
+    <Version>0.0.1</Version>
+    <Authors>Raypro</Authors>
+    <Description>相容新套件PhoenixToolkits.MessageQueue
+</Description>
+    <PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-message-queue</PackageProjectUrl>
+    <RepositoryUrl>https://gitlab.com/rayprosoft/tgs-message-queue.git</RepositoryUrl>
+    <PackageTags>Tgs;MessageQueue;PhoenixToolkits;Compatible</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PhoenixToolkits.MessageQueue" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tgs.MessageQueue\Tgs.MessageQueue.csproj">
+      <Aliases>Tgs</Aliases>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

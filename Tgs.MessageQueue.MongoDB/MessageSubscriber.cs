@@ -36,7 +36,6 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		GC.SuppressFinalize(this);
 	}
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "<暫止>")]
 	public MessageResult Process(ProcessContext processContext)
 	{
 		using var activity = TraceContextPropagator.TryExtract(
@@ -109,10 +108,7 @@ internal class MessageSubscriber<TReceiver> : IMessageSubscriber, IAsyncDisposab
 		}
 	}
 
-#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
-
 	protected virtual ValueTask DisposeAsyncCore()
-#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
 	{
 		return ValueTask.CompletedTask;
 	}

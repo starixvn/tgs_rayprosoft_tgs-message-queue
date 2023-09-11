@@ -62,6 +62,8 @@ push-nuget:
     - dotnet nuget push "Tgs.MessageQueue.MongoDB/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
     - dotnet pack -c $BuildConfiguration "Tgs.MessageQueue.InProcess/Tgs.MessageQueue.InProcess.csproj" --no-restore
     - dotnet nuget push "Tgs.MessageQueue.InProcess/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
+    - dotnet pack -c $BuildConfiguration "Tgs.MessageQueue.Compatible/Tgs.MessageQueue.Compatible.csproj" --no-restore
+    - dotnet nuget push "Tgs.MessageQueue.Compatible/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
   artifacts:
     name: Nuget
     untracked: false
@@ -72,3 +74,4 @@ push-nuget:
       - Tgs.MessageQueue.RabbitMQ/bin/$BuildConfiguration/*.nupkg
       - Tgs.MessageQueue.MongoDB/bin/$BuildConfiguration/*.nupkg
       - Tgs.MessageQueue.Inprocess/bin/$BuildConfiguration/*.nupkg
+      - Tgs.MessageQueue.Compatible/bin/$BuildConfiguration/*.nupkg

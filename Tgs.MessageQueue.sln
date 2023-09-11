@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.InProcess"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.MessageQueue.Direct", "Tgs.MessageQueue.Direct\Tgs.MessageQueue.Direct.csproj", "{31FD0106-5B7C-44BA-B992-DBD047C27DFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.MessageQueue.Compatible", "Tgs.MessageQueue.Compatible\Tgs.MessageQueue.Compatible.csproj", "{DD6B5ACE-2FB7-4BF6-BEE9-604FC0833535}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{31FD0106-5B7C-44BA-B992-DBD047C27DFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31FD0106-5B7C-44BA-B992-DBD047C27DFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31FD0106-5B7C-44BA-B992-DBD047C27DFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD6B5ACE-2FB7-4BF6-BEE9-604FC0833535}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD6B5ACE-2FB7-4BF6-BEE9-604FC0833535}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD6B5ACE-2FB7-4BF6-BEE9-604FC0833535}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD6B5ACE-2FB7-4BF6-BEE9-604FC0833535}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
